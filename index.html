@@ -1,0 +1,3030 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Agent Web V6 - Autonomous Assistant</title>
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-elevated: #334155;
+            --bg-input: #0b1120;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --border: #334155;
+            --border-light: #475569;
+            --bubble-user: #0284c7;
+            --bubble-ai: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --font-code: "Fira Code", Consolas, Monaco, "Courier New", monospace;
+            --sidebar-width: 280px;
+        }
+
+        [data-theme="light"] {
+            --bg-base: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-elevated: #f1f5f9;
+            --bg-input: #ffffff;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --accent-glow: rgba(2, 132, 199, 0.15);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-dim: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #cbd5e1;
+            --bubble-user: #0284c7;
+            --bubble-ai: #f1f5f9;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        /* App Container */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .app-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .app-brand-badge {
+            background: linear-gradient(135deg, var(--accent), #818cf8);
+            color: #0f172a;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-new-chat {
+            margin: 12px 16px;
+            padding: 10px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-new-chat:hover {
+            background: var(--accent);
+            color: #0f172a;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .nav-tabs {
+            display: flex;
+            padding: 4px 16px;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .nav-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .nav-tab-btn.active {
+            color: var(--accent);
+            background: var(--bg-elevated);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.88rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .chat-history-item:hover {
+            background: var(--bg-elevated);
+            color: var(--text-main);
+        }
+
+        .chat-history-item.active {
+            background: var(--bg-elevated);
+            color: var(--accent);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .chat-item-actions {
+            display: none;
+            gap: 4px;
+        }
+
+        .chat-history-item:hover .chat-item-actions {
+            display: flex;
+        }
+
+        .action-icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .action-icon-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-base);
+        }
+
+        .action-icon-btn.delete:hover {
+            color: var(--danger);
+        }
+
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-surface);
+        }
+
+        .btn-footer-icon {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-footer-icon:hover {
+            background: var(--accent);
+            color: #0f172a;
+            border-color: var(--accent);
+        }
+
+        /* Main Chat Panel */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: var(--bg-base);
+            position: relative;
+        }
+
+        .chat-top-header {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: var(--bg-surface);
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-toggle-sidebar {
+            display: none;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+
+        .session-title-display {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-header-action {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-header-action:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Messages Container */
+        .chat-messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            scroll-behavior: smooth;
+        }
+
+        .welcome-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            max-width: 680px;
+            margin: auto;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .welcome-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .welcome-desc {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .quick-chips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            text-align: left;
+        }
+
+        .quick-chip {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-chip:hover {
+            border-color: var(--accent);
+            background: var(--bg-base);
+            transform: translateY(-2px);
+        }
+
+        .quick-chip-title {
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 2px;
+        }
+
+        /* Message Bubbles */
+        .message-row {
+            display: flex;
+            flex-direction: column;
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+            gap: 6px;
+        }
+
+        .message-row.user {
+            align-items: flex-end;
+        }
+
+        .message-row.ai {
+            align-items: flex-start;
+        }
+
+        .message-meta {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            padding: 0 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: var(--radius-lg);
+            max-width: 90%;
+            word-break: break-word;
+            font-size: 0.96rem;
+            line-height: 1.6;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message-row.user .message-bubble {
+            background-color: var(--bubble-user);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-row.ai .message-bubble {
+            background-color: var(--bubble-ai);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .bubble-tools {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-bubble-tool {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.74rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-bubble-tool:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .telemetry-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-family: var(--font-code);
+            margin-top: 4px;
+        }
+
+        /* Typing & Thinking Indicator */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 18px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Input Bar */
+        .chat-input-wrapper {
+            padding: 16px 20px;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            max-width: 860px;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .input-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .input-toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tool-chip-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tool-chip-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .chat-input-box {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 8px 12px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .chat-input-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .chat-textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            resize: none;
+            max-height: 140px;
+            min-height: 24px;
+            padding: 4px 0;
+        }
+
+        .btn-input-action {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .btn-input-action:hover {
+            color: var(--accent);
+            background: var(--bg-elevated);
+        }
+
+        .btn-input-action.send {
+            background: var(--accent);
+            color: #0f172a;
+        }
+
+        .btn-input-action.send:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-input-action.recording {
+            color: var(--danger);
+            animation: pulseRecord 1s infinite;
+        }
+
+        @keyframes pulseRecord {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.18); }
+            100% { transform: scale(1); }
+        }
+
+        /* Debug / Telemetry Drawer */
+        .debug-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 360px;
+            max-height: 400px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            font-family: var(--font-code);
+            font-size: 0.8rem;
+        }
+
+        .debug-panel.active {
+            display: flex;
+        }
+
+        .debug-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .debug-logs {
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .debug-log-item {
+            background: var(--bg-base);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--accent);
+        }
+
+        /* Generic Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 600px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            animation: modalPop 0.25s ease;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.94); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .btn-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+
+        .btn-modal-close:hover {
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: #0f172a;
+            padding: 8px 18px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .data-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .data-card {
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .data-card-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .data-card-title {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .data-card-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 18px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+            animation: toastIn 0.3s ease;
+            border-left: 4px solid var(--accent);
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Code formatting in chat */
+        pre {
+            background: var(--bg-input);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 8px 0;
+            font-family: var(--font-code);
+            font-size: 0.86rem;
+            border: 1px solid var(--border);
+        }
+
+        code {
+            font-family: var(--font-code);
+            background: var(--bg-input);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.86em;
+            color: var(--accent);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                transform: translateX(-100%);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .btn-toggle-sidebar {
+                display: block;
+            }
+
+            .debug-panel {
+                width: calc(100vw - 40px);
+                right: 20px;
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <div class="app-brand">
+                    <span>⚡ AI Agent</span>
+                    <span class="app-brand-badge">V6.0</span>
+                </div>
+                <button class="action-icon-btn" id="btnCloseSidebar" title="Tutup Sidebar">✕</button>
+            </div>
+
+            <button class="btn-new-chat" id="btnNewChat">
+                <span>➕</span>
+                <span>Obrolan Baru</span>
+            </button>
+
+            <nav class="nav-tabs" id="navTabsContainer">
+                <button class="nav-tab-btn active" data-tab="chats">Chats</button>
+                <button class="nav-tab-btn" data-tab="memory">Memory</button>
+                <button class="nav-tab-btn" data-tab="knowledge">Knowledge</button>
+                <button class="nav-tab-btn" data-tab="learning">Training</button>
+            </nav>
+
+            <div class="sidebar-content" id="sidebarListContainer">
+                <!-- Dynamic Content via JS -->
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn-footer-icon" id="btnOpenSettings" title="Pengaturan">⚙️</button>
+                <button class="btn-footer-icon" id="btnOpenFiles" title="File TXT Assistant">📄</button>
+                <button class="btn-footer-icon" id="btnOpenBackup" title="Export / Import Data">💾</button>
+                <button class="btn-footer-icon" id="btnToggleTheme" title="Ganti Tema">🌓</button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-chat">
+            <!-- Header -->
+            <header class="chat-top-header">
+                <div class="header-left">
+                    <button class="btn-toggle-sidebar" id="btnOpenSidebar">☰</button>
+                    <div class="session-title-display">
+                        <span id="currentSessionTitle">Percakapan Baru</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-header-action" id="btnHeaderSearch" title="Buka Pencarian Web">
+                        <span>🔍</span> <span>Search</span>
+                    </button>
+                    <button class="btn-header-action" id="btnHeaderClear" title="Bersihkan Pesan">
+                        <span>🗑️</span> <span>Clear</span>
+                    </button>
+                    <button class="btn-header-action" id="btnToggleDebug" title="Telemetry & Debug">
+                        <span>📊</span> <span>Debug</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Message Area -->
+            <div class="chat-messages-container" id="chatMessages">
+                <!-- Welcome Screen or Dynamic Messages -->
+            </div>
+
+            <!-- Input Bar -->
+            <div class="chat-input-wrapper">
+                <div class="input-toolbar">
+                    <div class="input-toolbar-group">
+                        <button class="tool-chip-btn" id="chipCalc">🧮 Kalkulator</button>
+                        <button class="tool-chip-btn" id="chipConvert">🔄 Konversi</button>
+                        <button class="tool-chip-btn" id="chipTime">🕒 Waktu</button>
+                        <button class="tool-chip-btn" id="chipLearn">🧠 Ajari AI</button>
+                    </div>
+                    <div class="input-toolbar-group">
+                        <span id="speechStatusIndicator" style="font-size:0.75rem; color:var(--text-dim);"></span>
+                    </div>
+                </div>
+
+                <div class="chat-input-box">
+                    <button class="btn-input-action" id="btnVoiceInput" title="Voice Input (Bicara)">🎤</button>
+                    <textarea 
+                        class="chat-textarea" 
+                        id="userChatInput" 
+                        placeholder="Tanyakan sesuatu, hitung matematika, ajari AI, atau gunakan /help..." 
+                        rows="1"
+                    ></textarea>
+                    <button class="btn-input-action" id="btnManualSearch" title="Cari di Google Langsung">🌐</button>
+                    <button class="btn-input-action send" id="btnSendMessage" title="Kirim Pesan (Enter)">➤</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Telemetry Debug Drawer -->
+    <div class="debug-panel" id="debugDrawer">
+        <div class="debug-header">
+            <span>⚡ AI Engine Telemetry</span>
+            <button class="action-icon-btn" id="btnCloseDebug">✕</button>
+        </div>
+        <div class="debug-logs" id="debugLogList">
+            <div class="debug-log-item">Engine: Ready (Vanilla JS Autonomous Engine V6)</div>
+        </div>
+    </div>
+
+    <!-- Modal Manager Overlay -->
+    <div class="modal-overlay" id="appModalOverlay">
+        <div class="modal-container" id="appModalContainer">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Modal</h3>
+                <button class="btn-modal-close" id="btnCloseModal">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic Content -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Dynamic Buttons -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastBox"></div>
+
+    <script>
+        /**
+         * AI AGENT WEB V6 - FULL ARCHITECTURE & AUTONOMOUS CLIENT-SIDE ENGINE
+         * No external backend, no API key, zero inline onclicks.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            'use strict';
+
+            /* =========================================================
+               1. STORAGE & STATE MANAGER
+            ========================================================= */
+            const StorageManager = {
+                PREFIX: 'AIAgent_V6_',
+                get(key, defaultValue = null) {
+                    try {
+                        const item = localStorage.getItem(this.PREFIX + key);
+                        return item !== null ? JSON.parse(item) : defaultValue;
+                    } catch (e) {
+                        console.error('Storage get error:', e);
+                        return defaultValue;
+                    }
+                },
+                set(key, value) {
+                    try {
+                        localStorage.setItem(this.PREFIX + key, JSON.stringify(value));
+                        return true;
+                    } catch (e) {
+                        console.error('Storage set error:', e);
+                        UI.toast('Gagal menyimpan ke penyimpanan lokal (Storage penuh).', 'danger');
+                        return false;
+                    }
+                },
+                remove(key) {
+                    try {
+                        localStorage.removeItem(this.PREFIX + key);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            };
+
+            const AppState = {
+                chats: StorageManager.get('chats', []),
+                activeChatId: StorageManager.get('active_chat_id', null),
+                memory: StorageManager.get('memory', {}),
+                knowledge: StorageManager.get('knowledge', [
+                    { q: 'apa itu iklim', a: 'Iklim adalah pola cuaca rata-rata di suatu wilayah dalam jangka waktu panjang (biasanya 30 tahun atau lebih).' },
+                    { q: 'apa itu cuaca', a: 'Cuaca adalah kondisi atmosfer di suatu tempat pada waktu tertentu dalam jangka pendek (harian atau jam).' },
+                    { q: 'apa itu fotosintesis', a: 'Fotosintesis adalah proses tumbuhan hijau mengubah air dan karbon dioksida menjadi glukosa dan oksigen dengan bantuan sinar matahari.' },
+                    { q: 'jelaskan hukum newton', a: 'Hukum Newton terdiri dari 3 hukum gerak: 1) Kelembaman (F=0), 2) Percepatan sebanding gaya (F=m.a), 3) Aksi-Reaksi (F aksi = -F reaksi).' },
+                    { q: 'siapa penemu listrik', a: 'Michael Faraday dan Thomas Edison berkontribusi besar pada pemanfaatan listrik praktis, sementara Benjamin Franklin meneliti muatan listrik dasar.' },
+                    { q: 'apa itu kecerdasan buatan', a: 'Kecerdasan Buatan (AI) adalah simulasi kecerdasan manusia dalam mesin yang diprogram untuk berpikir, belajar, dan memecahkan masalah.' },
+                    { q: 'apa itu atom', a: 'Atom adalah unit terkecil materi yang mempertahankan sifat kimia suatu unsur, tersusun atas proton, neutron, dan elektron.' }
+                ]),
+                intents: StorageManager.get('custom_intents', [
+                    { intent: 'salam', text: 'halo' },
+                    { intent: 'salam', text: 'hai' },
+                    { intent: 'salam', text: 'selamat pagi' },
+                    { intent: 'salam', text: 'selamat siang' },
+                    { intent: 'salam', text: 'selamat malam' },
+                    { intent: 'salam', text: 'assalamualaikum' },
+                    { intent: 'kabar', text: 'apa kabar' },
+                    { intent: 'kabar', text: 'bagaimana kabarmu' },
+                    { intent: 'terimakasih', text: 'terima kasih' },
+                    { intent: 'terimakasih', text: 'makasih' },
+                    { intent: 'terimakasih', text: 'thanks' },
+                    { intent: 'perpisahan', text: 'dadah' },
+                    { intent: 'perpisahan', text: 'sampai jumpa' },
+                    { intent: 'perpisahan', text: 'selamat tinggal' },
+                    { intent: 'bantuan', text: 'tolong saya' },
+                    { intent: 'bantuan', text: 'bagaimana cara pakaimu' },
+                    { intent: 'bantuan', text: 'menu bantuan' },
+                    { intent: 'kemampuan', text: 'kamu bisa apa' },
+                    { intent: 'kemampuan', text: 'fitur apa saja yang ada' },
+                    { intent: 'identitas_ai', text: 'siapa kamu' },
+                    { intent: 'identitas_ai', text: 'kamu robot apa' }
+                ]),
+                files: StorageManager.get('txt_files', {}),
+                settings: StorageManager.get('settings', {
+                    theme: 'dark',
+                    aiName: 'Aura AI',
+                    userName: 'Nicholas',
+                    fontSize: '15px',
+                    autoSearch: true,
+                    autoMemory: true,
+                    typingAnim: true,
+                    speechOutput: false,
+                    debugMode: false
+                }),
+                activeNavTab: 'chats',
+                isRecording: false,
+                recognitionInstance: null,
+                isGenerating: false
+            };
+
+            /* Save helpers */
+            const saveState = {
+                chats() { StorageManager.set('chats', AppState.chats); },
+                activeChat() { StorageManager.set('active_chat_id', AppState.activeChatId); },
+                memory() { StorageManager.set('memory', AppState.memory); },
+                knowledge() { StorageManager.set('knowledge', AppState.knowledge); },
+                intents() { StorageManager.set('custom_intents', AppState.intents); },
+                files() { StorageManager.set('txt_files', AppState.files); },
+                settings() { StorageManager.set('settings', AppState.settings); }
+            };
+
+            /* =========================================================
+               2. SAFE MATH EVALUATOR (No eval() directly)
+            ========================================================= */
+            const SafeMathParser = {
+                tokenize(expr) {
+                    const tokens = [];
+                    const sanitized = expr.replace(/\s+/g, '').replace(/,/g, '.');
+                    let i = 0;
+                    
+                    while (i < sanitized.length) {
+                        const ch = sanitized[i];
+
+                        // Number parsing (integers, decimals)
+                        if (/[0-9.]/.test(ch)) {
+                            let numStr = '';
+                            while (i < sanitized.length && /[0-9.]/.test(sanitized[i])) {
+                                numStr += sanitized[i++];
+                            }
+                            tokens.push({ type: 'NUM', value: parseFloat(numStr) });
+                            continue;
+                        }
+
+                        // Identifier (functions & constants)
+                        if (/[a-zA-Z]/.test(ch)) {
+                            let ident = '';
+                            while (i < sanitized.length && /[a-zA-Z0-9]/.test(sanitized[i])) {
+                                ident += sanitized[i++];
+                            }
+                            ident = ident.toLowerCase();
+                            if (ident === 'pi') tokens.push({ type: 'NUM', value: Math.PI });
+                            else if (ident === 'e') tokens.push({ type: 'NUM', value: Math.E });
+                            else tokens.push({ type: 'FUNC', value: ident });
+                            continue;
+                        }
+
+                        // Square root symbol √
+                        if (ch === '√') {
+                            tokens.push({ type: 'FUNC', value: 'sqrt' });
+                            i++;
+                            continue;
+                        }
+
+                        // Basic operators
+                        if ('+-*/^%()!'.includes(ch)) {
+                            tokens.push({ type: 'OP', value: ch });
+                            i++;
+                            continue;
+                        }
+
+                        i++;
+                    }
+                    return tokens;
+                },
+
+                shuntingYard(tokens) {
+                    const outQueue = [];
+                    const opStack = [];
+                    const precedence = { '+': 1, '-': 1, '*': 2, '/': 2, '%': 2, '^': 3, '!': 4 };
+                    const rightAssociative = { '^': true };
+
+                    for (let i = 0; i < tokens.length; i++) {
+                        const token = tokens[i];
+
+                        if (token.type === 'NUM') {
+                            outQueue.push(token);
+                        } else if (token.type === 'FUNC') {
+                            opStack.push(token);
+                        } else if (token.type === 'OP') {
+                            if (token.value === '(') {
+                                opStack.push(token);
+                            } else if (token.value === ')') {
+                                while (opStack.length && opStack[opStack.length - 1].value !== '(') {
+                                    outQueue.push(opStack.pop());
+                                }
+                                opStack.pop(); // Remove '('
+                                if (opStack.length && opStack[opStack.length - 1].type === 'FUNC') {
+                                    outQueue.push(opStack.pop());
+                                }
+                            } else {
+                                // Unary minus check
+                                if (token.value === '-' && (i === 0 || (tokens[i - 1].type === 'OP' && tokens[i - 1].value !== ')'))) {
+                                    outQueue.push({ type: 'NUM', value: 0 });
+                                }
+                                while (
+                                    opStack.length &&
+                                    opStack[opStack.length - 1].type === 'OP' &&
+                                    opStack[opStack.length - 1].value !== '(' &&
+                                    (
+                                        (precedence[opStack[opStack.length - 1].value] > precedence[token.value]) ||
+                                        (precedence[opStack[opStack.length - 1].value] === precedence[token.value] && !rightAssociative[token.value])
+                                    )
+                                ) {
+                                    outQueue.push(opStack.pop());
+                                }
+                                opStack.push(token);
+                            }
+                        }
+                    }
+
+                    while (opStack.length) {
+                        outQueue.push(opStack.pop());
+                    }
+                    return outQueue;
+                },
+
+                factorial(n) {
+                    if (n < 0) return NaN;
+                    if (n === 0 || n === 1) return 1;
+                    let r = 1;
+                    for (let i = 2; i <= Math.min(n, 100); i++) r *= i;
+                    return r;
+                },
+
+                degToRad(deg) {
+                    return deg * (Math.PI / 180);
+                },
+
+                evalRPN(rpn) {
+                    const stack = [];
+                    for (const token of rpn) {
+                        if (token.type === 'NUM') {
+                            stack.push(token.value);
+                        } else if (token.type === 'FUNC') {
+                            if (stack.length < 1) throw new Error('Argumen fungsi tidak valid');
+                            const a = stack.pop();
+                            switch (token.value) {
+                                case 'sin': stack.push(Math.sin(this.degToRad(a))); break;
+                                case 'cos': stack.push(Math.cos(this.degToRad(a))); break;
+                                case 'tan': stack.push(Math.tan(this.degToRad(a))); break;
+                                case 'asin': stack.push(Math.asin(a) * (180 / Math.PI)); break;
+                                case 'acos': stack.push(Math.acos(a) * (180 / Math.PI)); break;
+                                case 'atan': stack.push(Math.atan(a) * (180 / Math.PI)); break;
+                                case 'sqrt': stack.push(Math.sqrt(a)); break;
+                                case 'cbrt': stack.push(Math.cbrt(a)); break;
+                                case 'abs': stack.push(Math.abs(a)); break;
+                                case 'log': case 'log10': stack.push(Math.log10(a)); break;
+                                case 'ln': stack.push(Math.log(a)); break;
+                                case 'ceil': stack.push(Math.ceil(a)); break;
+                                case 'floor': stack.push(Math.floor(a)); break;
+                                case 'round': stack.push(Math.round(a)); break;
+                                default: throw new Error(`Fungsi "${token.value}" tidak dikenal`);
+                            }
+                        } else if (token.type === 'OP') {
+                            if (token.value === '!') {
+                                const a = stack.pop();
+                                stack.push(this.factorial(a));
+                                continue;
+                            }
+                            if (stack.length < 2) throw new Error('Ekspresi operator tidak lengkap');
+                            const b = stack.pop();
+                            const a = stack.pop();
+                            switch (token.value) {
+                                case '+': stack.push(a + b); break;
+                                case '-': stack.push(a - b); break;
+                                case '*': stack.push(a * b); break;
+                                case '/': 
+                                    if (b === 0) throw new Error('Pembagian dengan nol tidak terdefinisi');
+                                    stack.push(a / b); 
+                                    break;
+                                case '%': stack.push(a % b); break;
+                                case '^': stack.push(Math.pow(a, b)); break;
+                            }
+                        }
+                    }
+                    if (stack.length !== 1) throw new Error('Format formula matematika salah');
+                    return stack[0];
+                },
+
+                calculate(expression) {
+                    try {
+                        const tokens = this.tokenize(expression);
+                        if (tokens.length === 0) return null;
+                        const rpn = this.shuntingYard(tokens);
+                        const result = this.evalRPN(rpn);
+                        return isNaN(result) ? null : Number(result.toFixed(6));
+                    } catch (err) {
+                        return null;
+                    }
+                }
+            };
+
+            /* =========================================================
+               3. UNIT CONVERTER
+            ========================================================= */
+            const UnitConverter = {
+                units: {
+                    // Length (base meter)
+                    km: { cat: 'length', rate: 1000, name: 'kilometer' },
+                    hm: { cat: 'length', rate: 100, name: 'hektometer' },
+                    dam: { cat: 'length', rate: 10, name: 'dekameter' },
+                    m: { cat: 'length', rate: 1, name: 'meter' },
+                    meter: { cat: 'length', rate: 1, name: 'meter' },
+                    dm: { cat: 'length', rate: 0.1, name: 'desimeter' },
+                    cm: { cat: 'length', rate: 0.01, name: 'sentimeter' },
+                    mm: { cat: 'length', rate: 0.001, name: 'milimeter' },
+                    mil: { cat: 'length', rate: 1609.34, name: 'mil' },
+                    mile: { cat: 'length', rate: 1609.34, name: 'mil' },
+                    yard: { cat: 'length', rate: 0.9144, name: 'yard' },
+                    kaki: { cat: 'length', rate: 0.3048, name: 'kaki' },
+                    feet: { cat: 'length', rate: 0.3048, name: 'kaki' },
+                    ft: { cat: 'length', rate: 0.3048, name: 'kaki' },
+                    inci: { cat: 'length', rate: 0.0254, name: 'inci' },
+                    inch: { cat: 'length', rate: 0.0254, name: 'inci' },
+
+                    // Weight (base gram)
+                    ton: { cat: 'mass', rate: 1000000, name: 'ton' },
+                    kg: { cat: 'mass', rate: 1000, name: 'kilogram' },
+                    kilogram: { cat: 'mass', rate: 1000, name: 'kilogram' },
+                    hg: { cat: 'mass', rate: 100, name: 'hektogram' },
+                    ons: { cat: 'mass', rate: 100, name: 'ons' },
+                    dag: { cat: 'mass', rate: 10, name: 'dekagram' },
+                    g: { cat: 'mass', rate: 1, name: 'gram' },
+                    gram: { cat: 'mass', rate: 1, name: 'gram' },
+                    dg: { cat: 'mass', rate: 0.1, name: 'desigram' },
+                    cg: { cat: 'mass', rate: 0.01, name: 'sentigram' },
+                    mg: { cat: 'mass', rate: 0.001, name: 'miligram' },
+                    miligram: { cat: 'mass', rate: 0.001, name: 'miligram' },
+                    pound: { cat: 'mass', rate: 453.592, name: 'pound (lbs)' },
+                    lbs: { cat: 'mass', rate: 453.592, name: 'pound (lbs)' },
+
+                    // Volume (base ml / cm3)
+                    l: { cat: 'vol', rate: 1000, name: 'liter' },
+                    liter: { cat: 'vol', rate: 1000, name: 'liter' },
+                    ml: { cat: 'vol', rate: 1, name: 'mililiter' },
+                    mililiter: { cat: 'vol', rate: 1, name: 'mililiter' },
+                    cc: { cat: 'vol', rate: 1, name: 'cc' },
+                    m3: { cat: 'vol', rate: 1000000, name: 'meter kubik' },
+                    gallon: { cat: 'vol', rate: 3785.41, name: 'gallon' },
+
+                    // Time (base second)
+                    hari: { cat: 'time', rate: 86400, name: 'hari' },
+                    jam: { cat: 'time', rate: 3600, name: 'jam' },
+                    menit: { cat: 'time', rate: 60, name: 'menit' },
+                    detik: { cat: 'time', rate: 1, name: 'detik' },
+                    sekon: { cat: 'time', rate: 1, name: 'detik' },
+                    sec: { cat: 'time', rate: 1, name: 'detik' }
+                },
+
+                convertTemperature(val, from, to) {
+                    let c = 0;
+                    from = from.replace('°', '').toLowerCase();
+                    to = to.replace('°', '').toLowerCase();
+
+                    // Convert to Celsius first
+                    if (from === 'c' || from === 'celsius') c = val;
+                    else if (from === 'f' || from === 'fahrenheit') c = (val - 32) * (5 / 9);
+                    else if (from === 'k' || from === 'kelvin') c = val - 273.15;
+                    else if (from === 'r' || from === 'reamur') c = val * (5 / 4);
+                    else return null;
+
+                    // Convert Celsius to destination
+                    if (to === 'c' || to === 'celsius') return c;
+                    if (to === 'f' || to === 'fahrenheit') return (c * 9 / 5) + 32;
+                    if (to === 'k' || to === 'kelvin') return c + 273.15;
+                    if (to === 'r' || to === 'reamur') return c * (4 / 5);
+                    return null;
+                },
+
+                parseAndConvert(text) {
+                    const regex = /([\d.,]+)\s*([a-zA-Z°]+)\s*(?:ke|to|=|in|menjadi|dalam)\s*([a-zA-Z°]+)/i;
+                    const match = text.match(regex);
+                    if (!match) return null;
+
+                    const val = parseFloat(match[1].replace(/,/g, '.'));
+                    const from = match[2].toLowerCase();
+                    const to = match[3].toLowerCase();
+
+                    // Check Temperature
+                    if (['c', 'f', 'k', 'r', '°c', '°f', '°r', 'celsius', 'fahrenheit', 'kelvin', 'reamur'].includes(from)) {
+                        const res = this.convertTemperature(val, from, to);
+                        if (res !== null) {
+                            return `${val} ${from.toUpperCase()} = ${res.toLocaleString('id-ID', { maximumFractionDigits: 4 })} ${to.toUpperCase()}`;
+                        }
+                    }
+
+                    // Standard Dimensions
+                    const uFrom = this.units[from];
+                    const uTo = this.units[to];
+
+                    if (uFrom && uTo && uFrom.cat === uTo.cat) {
+                        const baseVal = val * uFrom.rate;
+                        const finalVal = baseVal / uTo.rate;
+                        return `${val.toLocaleString('id-ID')} ${uFrom.name} = ${finalVal.toLocaleString('id-ID', { maximumFractionDigits: 6 })} ${uTo.name}`;
+                    }
+
+                    return null;
+                }
+            };
+
+            /* =========================================================
+               4. DATE & TIME UTILITY
+            ========================================================= */
+            const DateTimeTool = {
+                days: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+                months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+
+                getCurrentInfo() {
+                    const now = new Date();
+                    const day = this.days[now.getDay()];
+                    const date = now.getDate();
+                    const month = this.months[now.getMonth()];
+                    const year = now.getFullYear();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+                    return {
+                        time: `${hours}:${minutes}:${seconds} WIB`,
+                        dateString: `${day}, ${date} ${month} ${year}`,
+                        dayName: day,
+                        year: year,
+                        full: `Sekarang hari **${day}**, tanggal **${date} ${month} ${year}**, pukul **${hours}:${minutes}:${seconds}** lokal.`
+                    };
+                },
+
+                matchQuery(q) {
+                    const normalized = q.toLowerCase();
+                    const info = this.getCurrentInfo();
+
+                    if (normalized.includes('jam berapa') || normalized.includes('pukul berapa') || normalized.includes('waktu sekarang')) {
+                        return `Saat ini pukul **${info.time}**.`;
+                    }
+                    if (normalized.includes('tanggal berapa') || normalized.includes('hari ini tanggal')) {
+                        return `Hari ini tanggal **${info.dateString}**.`;
+                    }
+                    if (normalized.includes('hari apa')) {
+                        return `Hari ini adalah hari **${info.dayName}**.`;
+                    }
+                    if (normalized.includes('bulan apa')) {
+                        return `Saat ini adalah bulan **${this.months[new Date().getMonth()]}**.`;
+                    }
+                    if (normalized.includes('tahun berapa')) {
+                        return `Saat ini adalah tahun **${info.year}**.`;
+                    }
+                    return null;
+                }
+            };
+
+            /* =========================================================
+               5. TEXT PROCESSOR & LOCAL NLP / CLASSIFIER
+            ========================================================= */
+            const NLP = {
+                normalize(text) {
+                    return text
+                        .toLowerCase()
+                        .replace(/[^\w\s0-9+/*^%√°.,-]/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                },
+
+                tokenize(text) {
+                    return this.normalize(text).split(' ').filter(t => t.length > 0);
+                },
+
+                calculateSimilarity(s1, s2) {
+                    const words1 = new Set(this.tokenize(s1));
+                    const words2 = new Set(this.tokenize(s2));
+                    if (words1.size === 0 || words2.size === 0) return 0;
+
+                    let intersection = 0;
+                    words1.forEach(w => {
+                        if (words2.has(w)) intersection++;
+                    });
+
+                    const union = new Set([...words1, ...words2]).size;
+                    return intersection / union; // Jaccard similarity
+                },
+
+                // Naive Bayes Intent Predictor
+                predictIntent(text) {
+                    const tokens = this.tokenize(text);
+                    if (tokens.length === 0) return { intent: 'unknown', confidence: 0 };
+
+                    const intents = AppState.intents;
+                    const intentCounts = {};
+                    const wordCountsPerIntent = {};
+                    const vocab = new Set();
+
+                    intents.forEach(item => {
+                        intentCounts[item.intent] = (intentCounts[item.intent] || 0) + 1;
+                        if (!wordCountsPerIntent[item.intent]) wordCountsPerIntent[item.intent] = {};
+
+                        const tks = NLP.tokenize(item.text);
+                        tks.forEach(tk => {
+                            vocab.add(tk);
+                            wordCountsPerIntent[item.intent][tk] = (wordCountsPerIntent[item.intent][tk] || 0) + 1;
+                        });
+                    });
+
+                    const totalDocs = intents.length;
+                    const vocabSize = vocab.size || 1;
+                    const scores = {};
+
+                    Object.keys(intentCounts).forEach(intent => {
+                        let logProb = Math.log(intentCounts[intent] / totalDocs);
+                        const totalWordsInIntent = Object.values(wordCountsPerIntent[intent]).reduce((a, b) => a + b, 0);
+
+                        tokens.forEach(tk => {
+                            const count = wordCountsPerIntent[intent][tk] || 0;
+                            // Laplace Smoothing
+                            logProb += Math.log((count + 1) / (totalWordsInIntent + vocabSize));
+                        });
+
+                        scores[intent] = logProb;
+                    });
+
+                    // Find best intent
+                    let bestIntent = 'unknown';
+                    let maxLog = -Infinity;
+
+                    Object.keys(scores).forEach(intent => {
+                        if (scores[intent] > maxLog) {
+                            maxLog = scores[intent];
+                            bestIntent = intent;
+                        }
+                    });
+
+                    // Convert to approximate normalized confidence
+                    const highestSimilarity = intents
+                        .filter(i => i.intent === bestIntent)
+                        .reduce((max, cur) => Math.max(max, this.calculateSimilarity(text, cur.text)), 0);
+
+                    const confidence = Number((Math.min(1.0, 0.4 + highestSimilarity * 0.6)).toFixed(2));
+
+                    return { intent: bestIntent, confidence };
+                }
+            };
+
+            /* =========================================================
+               6. MEMORY ENGINE (Persistent User Information)
+            ========================================================= */
+            const MemoryEngine = {
+                extractAndSave(text) {
+                    const norm = text.trim();
+                    let saved = null;
+
+                    // Name patterns
+                    let m = norm.match(/(?:nama saya|panggil saya|namaku adalah|namaku)\s+([a-zA-Z\s]{2,30})/i);
+                    if (m && !norm.includes('siapa')) {
+                        const name = m[1].trim();
+                        AppState.memory.user_name = name;
+                        saved = `nama kamu **${name}**`;
+                    }
+
+                    // Age patterns
+                    m = norm.match(/(?:umur saya|usia saya|umurku)\s+(?:adalah\s+)?(\d{1,3})\s*(?:tahun)?/i);
+                    if (m) {
+                        const age = m[1];
+                        AppState.memory.user_age = age;
+                        saved = `usia kamu **${age} tahun**`;
+                    }
+
+                    // Location patterns
+                    m = norm.match(/(?:saya tinggal di|rumah saya di|domisili saya di)\s+([a-zA-Z\s]{2,35})/i);
+                    if (m) {
+                        const loc = m[1].trim();
+                        AppState.memory.user_location = loc;
+                        saved = `kamu tinggal di **${loc}**`;
+                    }
+
+                    // Hobby patterns
+                    m = norm.match(/(?:hobi saya|kesukaan saya|kegemaran saya)\s+(?:adalah\s+)?([a-zA-Z\s,]{2,40})/i);
+                    if (m) {
+                        const hobby = m[1].trim();
+                        AppState.memory.user_hobby = hobby;
+                        saved = `hobi kamu adalah **${hobby}**`;
+                    }
+
+                    // Custom key-value memory: ingat | key | value
+                    if (norm.toLowerCase().startsWith('ingat |')) {
+                        const parts = norm.split('|').map(p => p.trim());
+                        if (parts.length >= 3) {
+                            AppState.memory[parts[1]] = parts[2];
+                            saved = `bahwa **${parts[1]}** adalah "${parts[2]}"`;
+                        }
+                    }
+
+                    if (saved) {
+                        saveState.memory();
+                    }
+                    return saved;
+                },
+
+                queryMemory(text) {
+                    const norm = text.toLowerCase();
+
+                    if (norm.includes('siapa nama saya') || norm.includes('nama saya siapa')) {
+                        if (AppState.memory.user_name) return `Nama kamu adalah **${AppState.memory.user_name}**.`;
+                        return 'Saya belum mengetahui nama kamu. Kamu bisa katakan contohnya: *nama saya Nicholas*.';
+                    }
+
+                    if (norm.includes('berapa umur saya') || norm.includes('usia saya')) {
+                        if (AppState.memory.user_age) return `Usia kamu adalah **${AppState.memory.user_age} tahun**.`;
+                        return 'Saya belum mengetahui usia kamu. Katakan contohnya: *umur saya 20 tahun*.';
+                    }
+
+                    if (norm.includes('di mana saya tinggal') || norm.includes('tinggal di mana')) {
+                        if (AppState.memory.user_location) return `Kamu tinggal di **${AppState.memory.user_location}**.`;
+                        return 'Saya belum mengetahui tempat tinggalmu. Katakan contohnya: *saya tinggal di Jakarta*.';
+                    }
+
+                    if (norm.includes('apa hobi saya') || norm.includes('hobi saya apa')) {
+                        if (AppState.memory.user_hobby) return `Hobi kamu adalah **${AppState.memory.user_hobby}**.`;
+                        return 'Saya belum mengetahui hobimu.';
+                    }
+
+                    if (norm.includes('apa yang kamu ingat tentang saya') || norm.includes('semua ingatan') || norm.includes('lihat memory')) {
+                        const keys = Object.keys(AppState.memory);
+                        if (keys.length === 0) return 'Saat ini saya belum memiliki catatan ingatan khusus tentang kamu.';
+
+                        let res = 'Berikut adalah hal-hal yang saya ingat tentang kamu:\n';
+                        keys.forEach(k => {
+                            res += `• **${k}**: ${AppState.memory[k]}\n`;
+                        });
+                        return res;
+                    }
+
+                    return null;
+                }
+            };
+
+            /* =========================================================
+               7. KNOWLEDGE BASE SEARCH ENGINE
+            ========================================================= */
+            const KnowledgeEngine = {
+                find(query) {
+                    let bestMatch = null;
+                    let highestScore = 0;
+
+                    const normalizedQ = NLP.normalize(query);
+
+                    for (const item of AppState.knowledge) {
+                        const itemQ = NLP.normalize(item.q);
+                        
+                        // Exact match
+                        if (normalizedQ === itemQ || normalizedQ.includes(itemQ) || itemQ.includes(normalizedQ)) {
+                            return { answer: item.a, score: 1.0, matchedQuery: item.q };
+                        }
+
+                        // Jaccard similarity
+                        const sim = NLP.calculateSimilarity(normalizedQ, itemQ);
+                        if (sim > highestScore) {
+                            highestScore = sim;
+                            bestMatch = item;
+                        }
+                    }
+
+                    if (highestScore >= 0.55 && bestMatch) {
+                        return { answer: bestMatch.a, score: highestScore, matchedQuery: bestMatch.q };
+                    }
+
+                    return null;
+                }
+            };
+
+            /* =========================================================
+               8. WEB SEARCH ENGINE & STRICT GOOGLE FALLBACK
+            ========================================================= */
+            const SearchEngine = {
+                bukaGoogle(query) {
+                    const url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+                    window.open(url, '_blank');
+                },
+
+                async searchDuckDuckGoInstant(query) {
+                    try {
+                        const targetUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+                        const res = await fetch(targetUrl);
+                        if (!res.ok) return null;
+                        const data = await res.json();
+
+                        if (data.AbstractText) {
+                            return {
+                                text: data.AbstractText,
+                                source: data.AbstractSource || 'DuckDuckGo Instant Answer',
+                                url: data.AbstractURL || null
+                            };
+                        }
+                        if (data.Answer) {
+                            return {
+                                text: data.Answer,
+                                source: 'Instant Computation',
+                                url: null
+                            };
+                        }
+                        return null;
+                    } catch (err) {
+                        // CORS or network failure
+                        return null;
+                    }
+                }
+            };
+
+            /* =========================================================
+               9. SPEECH RECOGNITION & SYNTHESIS
+            ========================================================= */
+            const SpeechEngine = {
+                synth: window.speechSynthesis || null,
+                recognition: null,
+
+                init() {
+                    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+                    if (SpeechRec) {
+                        this.recognition = new SpeechRec();
+                        this.recognition.lang = 'id-ID';
+                        this.recognition.continuous = false;
+                        this.recognition.interimResults = false;
+
+                        this.recognition.onstart = () => {
+                            AppState.isRecording = true;
+                            UI.setRecordingUI(true);
+                        };
+
+                        this.recognition.onresult = (event) => {
+                            const transcript = event.results[0][0].transcript;
+                            const inputEl = document.getElementById('userChatInput');
+                            if (inputEl) {
+                                inputEl.value = transcript;
+                                AgentCore.handleUserInput(transcript);
+                            }
+                        };
+
+                        this.recognition.onerror = (e) => {
+                            console.warn('Speech Rec Error:', e);
+                            AppState.isRecording = false;
+                            UI.setRecordingUI(false);
+                            UI.toast('Input suara dihentikan atau tidak terdeteksi.', 'warning');
+                        };
+
+                        this.recognition.onend = () => {
+                            AppState.isRecording = false;
+                            UI.setRecordingUI(false);
+                        };
+                    }
+                },
+
+                toggleRecording() {
+                    if (!this.recognition) {
+                        UI.toast('Browser Anda tidak mendukung Web Speech Recognition.', 'warning');
+                        return;
+                    }
+                    if (AppState.isRecording) {
+                        this.recognition.stop();
+                    } else {
+                        try {
+                            this.recognition.start();
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }
+                },
+
+                speak(text) {
+                    if (!this.synth || !AppState.settings.speechOutput) return;
+                    try {
+                        this.synth.cancel();
+                        // Clean markdown characters for voice
+                        const cleanText = text.replace(/[*_#`]/g, '');
+                        const utter = new SpeechSynthesisUtterance(cleanText);
+                        utter.lang = 'id-ID';
+                        utter.rate = 1.0;
+                        this.synth.speak(utter);
+                    } catch (e) {
+                        console.error('TTS error:', e);
+                    }
+                }
+            };
+
+            /* =========================================================
+               10. FILE TXT ASSISTANT
+            ========================================================= */
+            const FileManager = {
+                createFile(name, content) {
+                    if (!name.endsWith('.txt')) name += '.txt';
+                    AppState.files[name] = content;
+                    saveState.files();
+                    return name;
+                },
+
+                download(name) {
+                    const content = AppState.files[name] || '';
+                    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = name;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            };
+
+            /* =========================================================
+               11. COMMAND PROCESSOR
+            ========================================================= */
+            const CommandProcessor = {
+                execute(input) {
+                    const trimmed = input.trim();
+                    if (!trimmed.startsWith('/')) return null;
+
+                    const parts = trimmed.slice(1).split(' ');
+                    const cmd = parts[0].toLowerCase();
+                    const args = parts.slice(1).join(' ');
+
+                    switch (cmd) {
+                        case 'help':
+                            return {
+                                handled: true,
+                                response: `### 📖 Panduan Perintah AI Agent V6
+• \`/calc <ekspresi>\` : Menghitung matematika (contoh: \`/calc 25*4 + sqrt(16)\`)
+• \`/search <query>\` : Mencari informasi ke Web / Google
+• \`/memory\` : Menampilkan data ingatan yang tersimpan
+• \`/learn <intent> | <teks>\` : Melatih intent lokal
+• \`/knowledge\` : Membuka basis pengetahuan
+• \`/clear\` : Membersihkan riwayat obrolan aktif
+• \`/reset\` : Mereset memory & knowledge kembali ke awal
+• \`/file\` : Membuka pengelola file TXT
+• \`/export\` : Ekspor semua data ke format JSON
+• \`/import\` : Membuka menu impor data
+• \`/debug\` : Membuka panel diagnostik
+• \`/about\` : Informasi versi AI Agent V6`
+                            };
+
+                        case 'calc':
+                            if (!args) return { handled: true, response: 'Gunakan: `/calc <ekspresi matematika>` (Contoh: `/calc 50*4 + 2^3`)' };
+                            const calcRes = SafeMathParser.calculate(args);
+                            if (calcRes !== null) {
+                                return { handled: true, response: `Hasil dari \`${args}\` = **${calcRes}**` };
+                            }
+                            return { handled: true, response: `Format matematika \`${args}\` tidak dapat dihitung.` };
+
+                        case 'search':
+                            if (!args) return { handled: true, response: 'Gunakan: `/search <kata kunci>`' };
+                            SearchEngine.bukaGoogle(args);
+                            return { handled: true, response: `Membuka pencarian Google untuk query: **"${args}"**.` };
+
+                        case 'memory':
+                            return { handled: true, response: MemoryEngine.queryMemory('lihat memory') };
+
+                        case 'clear':
+                            ChatEngine.clearActiveMessages();
+                            return { handled: true, response: 'Riwayat percakapan pada sesi ini telah dibersihkan.' };
+
+                        case 'reset':
+                            if (confirm('Apakah Anda yakin ingin mereset seluruh memory dan riwayat percakapan?')) {
+                                StorageManager.remove('memory');
+                                StorageManager.remove('chats');
+                                location.reload();
+                            }
+                            return { handled: true, response: 'Reset dibatalkan.' };
+
+                        case 'learn':
+                            UI.openModal('learning');
+                            return { handled: true, response: 'Membuka menu Self-Learning Intent Trainer.' };
+
+                        case 'knowledge':
+                            UI.openModal('knowledge');
+                            return { handled: true, response: 'Membuka Basis Pengetahuan (Knowledge Base).' };
+
+                        case 'file':
+                            UI.openModal('files');
+                            return { handled: true, response: 'Membuka Asisten Berkas TXT.' };
+
+                        case 'export':
+                            UI.openModal('backup');
+                            return { handled: true, response: 'Membuka panel Ekspor / Impor data.' };
+
+                        case 'import':
+                            UI.openModal('backup');
+                            return { handled: true, response: 'Membuka panel Ekspor / Impor data.' };
+
+                        case 'about':
+                            return {
+                                handled: true,
+                                response: `### 🤖 AI Agent Web V6
+• **Versi**: 6.0 Autonomous Edition
+• **Arsitektur**: 100% Client-Side Pure JavaScript
+• **Fitur**: Local Learning, Memory Entity, Safe Math Parser, DuckDuckGo & Google Strict Fallback, Speech Engine, Multi-chat.
+• **Status Server**: Tanpa server / No API Key required.`
+                            };
+
+                        case 'debug':
+                            UI.toggleDebugDrawer();
+                            return { handled: true, response: 'Panel debug telemetry telah dialihkan.' };
+
+                        default:
+                            return { handled: true, response: `Perintah \`/${cmd}\` tidak dikenal. Ketik \`/help\` untuk melihat daftar perintah.` };
+                    }
+                }
+            };
+
+            /* =========================================================
+               12. CORE AI AGENT DISPATCHER & LOGIC
+            ========================================================= */
+            const AgentCore = {
+                async processMessage(userText) {
+                    const startTime = performance.now();
+                    const trimmed = userText.trim();
+                    let responseText = '';
+                    let intentResult = { intent: 'general', confidence: 0 };
+                    let fallbackAction = 'LOCAL';
+
+                    // 1. Check Command System (/...)
+                    const cmdResult = CommandProcessor.execute(trimmed);
+                    if (cmdResult) {
+                        this.logTelemetry('COMMAND', 1.0, 'LOCAL', performance.now() - startTime);
+                        return cmdResult.response;
+                    }
+
+                    // 2. Check Self-Learning Syntax: ajari | intent | kalimat
+                    if (trimmed.toLowerCase().startsWith('ajari |')) {
+                        const parts = trimmed.split('|').map(p => p.trim());
+                        if (parts.length >= 3) {
+                            const newIntent = parts[1].toLowerCase();
+                            const sampleText = parts[2];
+                            AppState.intents.push({ intent: newIntent, text: sampleText });
+                            saveState.intents();
+                            this.logTelemetry('TRAINING', 1.0, 'LOCAL', performance.now() - startTime);
+                            return `Terima kasih! Saya telah mempelajari bahwa kalimat *"${sampleText}"* tergolong dalam intent **${newIntent}**.`;
+                        }
+                    }
+
+                    // 3. Check Memory Storage Input (e.g. "nama saya Nicholas", "ingat | ...")
+                    const memSaved = MemoryEngine.extractAndSave(trimmed);
+                    if (memSaved) {
+                        this.logTelemetry('MEMORY_SET', 0.98, 'LOCAL', performance.now() - startTime);
+                        return `Baik, saya akan mengingat bahwa ${memSaved}.`;
+                    }
+
+                    // 4. Check Memory Retrieval (e.g. "siapa nama saya")
+                    const memAnswer = MemoryEngine.queryMemory(trimmed);
+                    if (memAnswer) {
+                        this.logTelemetry('MEMORY_GET', 0.95, 'LOCAL', performance.now() - startTime);
+                        return memAnswer;
+                    }
+
+                    // 5. Check Unit Converter
+                    const convResult = UnitConverter.parseAndConvert(trimmed);
+                    if (convResult) {
+                        this.logTelemetry('CONVERTER', 0.99, 'LOCAL', performance.now() - startTime);
+                        return `📊 **Hasil Konversi Satuan:**\n${convResult}`;
+                    }
+
+                    // 6. Check Calculator (Direct Math or words like "hitung 2+2")
+                    const calcPrefixRemoved = trimmed.replace(/^(hitung|kalkulasi|berapa|hitunglah)\s+/i, '');
+                    const mathResult = SafeMathParser.calculate(calcPrefixRemoved);
+                    if (mathResult !== null) {
+                        this.logTelemetry('CALCULATOR', 0.99, 'LOCAL', performance.now() - startTime);
+                        return `Hasil perhitungan: **${mathResult.toLocaleString('id-ID')}**`;
+                    }
+
+                    // 7. Check Date & Time
+                    const dateResult = DateTimeTool.matchQuery(trimmed);
+                    if (dateResult) {
+                        this.logTelemetry('DATETIME', 0.99, 'LOCAL', performance.now() - startTime);
+                        return dateResult;
+                    }
+
+                    // 8. Check Knowledge Base
+                    const kbResult = KnowledgeEngine.find(trimmed);
+                    if (kbResult) {
+                        this.logTelemetry('KNOWLEDGE', kbResult.score, 'LOCAL_KB', performance.now() - startTime);
+                        return kbResult.answer;
+                    }
+
+                    // 9. Predict Intent via Machine Learning Engine
+                    intentResult = NLP.predictIntent(trimmed);
+
+                    if (intentResult.confidence >= 0.65) {
+                        switch (intentResult.intent) {
+                            case 'salam':
+                                responseText = `Halo ${AppState.memory.user_name || ''}! Ada yang bisa saya bantu untuk Anda hari ini?`;
+                                break;
+                            case 'kabar':
+                                responseText = 'Saya berfungsi dengan optimal dan siap membantu Anda!';
+                                break;
+                            case 'terimakasih':
+                                responseText = 'Sama-sama! Senang bisa membantu Anda.';
+                                break;
+                            case 'perpisahan':
+                                responseText = 'Sampai jumpa kembali! Jangan ragu untuk bertanya kapan saja.';
+                                break;
+                            case 'identitas_ai':
+                                responseText = `Saya adalah **${AppState.settings.aiName}**, asisten cerdas berbasis JavaScript lokal (V6.0).`;
+                                break;
+                            case 'kemampuan':
+                                responseText = `Saya dapat melakukan:
+1. Menghitung matematika rumit & trigonometri (\`/calc\`)
+2. Konversi satuan panjang, suhu, massa, waktu, dan volume
+3. Mengingat informasi tentang Anda (\`nama saya...\`)
+4. Pembelajaran intent mandiri (\`ajari | intent | teks\`)
+5. Basis pengetahuan lokal (\`ingat | tanya | jawab\`)
+6. Pembuat & pembaca berkas TXT (\`/file\`)
+7. Pencarian instan & Google Search fallback otomatis`;
+                                break;
+                            case 'bantuan':
+                                responseText = 'Ketik pertanyaan apa saja, coba hitung matematika (contoh: `sin(30) + 10`), atau ketik `/help` untuk panduan lengkap.';
+                                break;
+                        }
+
+                        if (responseText) {
+                            this.logTelemetry(intentResult.intent, intentResult.confidence, 'INTENT_NB', performance.now() - startTime);
+                            return responseText;
+                        }
+                    }
+
+                    // 10. Auto Search & Fallback Engine
+                    if (AppState.settings.autoSearch) {
+                        fallbackAction = 'DDG_ATTEMPT';
+                        const instantResult = await SearchEngine.searchDuckDuckGoInstant(trimmed);
+
+                        if (instantResult && instantResult.text) {
+                            this.logTelemetry('WEB_INSTANT', 0.85, 'DUCKDUCKGO_API', performance.now() - startTime);
+                            let reply = `🔍 **Informasi Ditemukan (${instantResult.source}):**\n${instantResult.text}`;
+                            if (instantResult.url) {
+                                reply += `\n\n[Baca selengkapnya](${instantResult.url})`;
+                            }
+                            return reply;
+                        }
+
+                        // STRICT REQUIREMENT: NEVER OPEN DUCKDUCKGO WEB PAGE.
+                        // DIRECTLY FALLBACK TO GOOGLE SEARCH.
+                        fallbackAction = 'GOOGLE_FALLBACK';
+                        this.logTelemetry('UNKNOWN', intentResult.confidence, 'GOOGLE_FALLBACK', performance.now() - startTime);
+                        SearchEngine.bukaGoogle(trimmed);
+
+                        return `Saya belum menemukan jawaban langsung di basis data lokal. Saya telah membuka pencarian **Google Search** untuk: **"${trimmed}"**.`;
+                    }
+
+                    // Absolute fallback
+                    this.logTelemetry('UNKNOWN', 0.1, 'LOCAL_FALLBACK', performance.now() - startTime);
+                    return `Saya belum menemukan jawabannya. Anda dapat melatih saya dengan format: \`ajari | nama_intent | ${trimmed}\` atau memasukkan pengetahuan baru dengan \`ingat | ${trimmed} | jawaban\`.`;
+                },
+
+                logTelemetry(intent, confidence, fallback, latencyMs) {
+                    const debugList = document.getElementById('debugLogList');
+                    if (!debugList) return;
+
+                    const item = document.createElement('div');
+                    item.className = 'debug-log-item';
+                    item.innerHTML = `
+                        <div><b>Intent:</b> ${intent} (${confidence})</div>
+                        <div><b>Route:</b> ${fallback}</div>
+                        <div><b>Latency:</b> ${Math.round(latencyMs)} ms</div>
+                    `;
+                    debugList.prepend(item);
+                },
+
+                async handleUserInput(text) {
+                    if (AppState.isGenerating) return;
+                    const clean = text.trim();
+                    if (!clean) return;
+
+                    // Ensure active chat session
+                    ChatEngine.ensureSession();
+
+                    // Append user message
+                    ChatEngine.appendMessage('user', clean);
+                    UI.clearInput();
+
+                    // Show typing indicator
+                    AppState.isGenerating = true;
+                    UI.showTyping(true);
+
+                    try {
+                        const aiReply = await this.processMessage(clean);
+                        UI.showTyping(false);
+                        ChatEngine.appendMessage('ai', aiReply);
+                        SpeechEngine.speak(aiReply);
+                    } catch (err) {
+                        console.error('Agent core error:', err);
+                        UI.showTyping(false);
+                        ChatEngine.appendMessage('ai', 'Terjadi kesalahan internal saat memproses pesan.');
+                    } finally {
+                        AppState.isGenerating = false;
+                    }
+                }
+            };
+
+            /* =========================================================
+               13. CHAT SESSIONS & HISTORY ENGINE
+            ========================================================= */
+            const ChatEngine = {
+                ensureSession() {
+                    if (!AppState.activeChatId || !AppState.chats.find(c => c.id === AppState.activeChatId)) {
+                        this.createSession('Percakapan Baru');
+                    }
+                },
+
+                createSession(title = 'Percakapan Baru') {
+                    const newId = 'chat_' + Date.now();
+                    const session = {
+                        id: newId,
+                        title: title,
+                        createdAt: Date.now(),
+                        messages: []
+                    };
+                    AppState.chats.unshift(session);
+                    AppState.activeChatId = newId;
+                    saveState.chats();
+                    saveState.activeChat();
+                    UI.renderSidebar();
+                    UI.renderMessages();
+                    return session;
+                },
+
+                getActiveSession() {
+                    return AppState.chats.find(c => c.id === AppState.activeChatId) || null;
+                },
+
+                appendMessage(role, content) {
+                    const session = this.getActiveSession();
+                    if (!session) return;
+
+                    const msg = {
+                        id: 'msg_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                        role: role,
+                        content: content,
+                        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                    };
+
+                    session.messages.push(msg);
+
+                    // Auto-rename session on first user message
+                    if (role === 'user' && session.messages.length <= 2 && session.title === 'Percakapan Baru') {
+                        session.title = content.length > 24 ? content.slice(0, 24) + '...' : content;
+                        UI.updateHeaderTitle(session.title);
+                    }
+
+                    saveState.chats();
+                    UI.renderMessageElement(msg, true);
+                    UI.renderSidebar();
+                },
+
+                deleteSession(id) {
+                    AppState.chats = AppState.chats.filter(c => c.id !== id);
+                    if (AppState.activeChatId === id) {
+                        AppState.activeChatId = AppState.chats.length > 0 ? AppState.chats[0].id : null;
+                        saveState.activeChat();
+                    }
+                    saveState.chats();
+                    UI.renderSidebar();
+                    UI.renderMessages();
+                },
+
+                renameSession(id, newTitle) {
+                    const session = AppState.chats.find(c => c.id === id);
+                    if (session && newTitle.trim()) {
+                        session.title = newTitle.trim();
+                        saveState.chats();
+                        UI.renderSidebar();
+                        if (AppState.activeChatId === id) {
+                            UI.updateHeaderTitle(session.title);
+                        }
+                    }
+                },
+
+                clearActiveMessages() {
+                    const session = this.getActiveSession();
+                    if (session) {
+                        session.messages = [];
+                        saveState.chats();
+                        UI.renderMessages();
+                    }
+                }
+            };
+
+            /* =========================================================
+               14. UI RENDERING & DOM EVENT BINDINGS
+            ========================================================= */
+            const UI = {
+                init() {
+                    this.applyTheme(AppState.settings.theme);
+                    this.applyFontSize(AppState.settings.fontSize);
+                    SpeechEngine.init();
+
+                    // Initial session check
+                    if (AppState.chats.length === 0) {
+                        ChatEngine.createSession('Percakapan Baru');
+                    } else if (!AppState.activeChatId) {
+                        AppState.activeChatId = AppState.chats[0].id;
+                    }
+
+                    this.renderSidebar();
+                    this.renderMessages();
+                    this.bindEvents();
+                },
+
+                applyTheme(theme) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                    AppState.settings.theme = theme;
+                    saveState.settings();
+                },
+
+                applyFontSize(size) {
+                    document.body.style.fontSize = size;
+                    AppState.settings.fontSize = size;
+                    saveState.settings();
+                },
+
+                toast(message, type = 'info') {
+                    const box = document.getElementById('toastBox');
+                    if (!box) return;
+                    const toast = document.createElement('div');
+                    toast.className = 'toast';
+                    if (type === 'danger') toast.style.borderLeftColor = 'var(--danger)';
+                    if (type === 'success') toast.style.borderLeftColor = 'var(--success)';
+                    if (type === 'warning') toast.style.borderLeftColor = 'var(--warning)';
+                    toast.textContent = message;
+                    box.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3200);
+                },
+
+                updateHeaderTitle(title) {
+                    const el = document.getElementById('currentSessionTitle');
+                    if (el) el.textContent = title;
+                },
+
+                clearInput() {
+                    const input = document.getElementById('userChatInput');
+                    if (input) {
+                        input.value = '';
+                        input.style.height = 'auto';
+                    }
+                },
+
+                setRecordingUI(isRec) {
+                    const btn = document.getElementById('btnVoiceInput');
+                    const label = document.getElementById('speechStatusIndicator');
+                    if (btn) btn.classList.toggle('recording', isRec);
+                    if (label) label.textContent = isRec ? '🔴 Mendengarkan suara...' : '';
+                },
+
+                showTyping(show) {
+                    const container = document.getElementById('chatMessages');
+                    if (!container) return;
+
+                    const existing = document.getElementById('typingIndicatorElement');
+                    if (existing) existing.remove();
+
+                    if (show) {
+                        const row = document.createElement('div');
+                        row.className = 'message-row ai';
+                        row.id = 'typingIndicatorElement';
+                        row.innerHTML = `
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        `;
+                        container.appendChild(row);
+                        container.scrollTop = container.scrollHeight;
+                    }
+                },
+
+                formatMarkdown(text) {
+                    let formatted = text
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+
+                    // Code blocks ```code```
+                    formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+                    // Inline code `code`
+                    formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+                    // Bold **text**
+                    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // Italic *text*
+                    formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    // Line breaks
+                    formatted = formatted.replace(/\n/g, '<br>');
+
+                    return formatted;
+                },
+
+                renderMessageElement(msg, shouldAnimate = false) {
+                    const container = document.getElementById('chatMessages');
+                    if (!container) return;
+
+                    const welcome = container.querySelector('.welcome-card');
+                    if (welcome) welcome.remove();
+
+                    const row = document.createElement('div');
+                    row.className = `message-row ${msg.role}`;
+
+                    const meta = document.createElement('div');
+                    meta.className = 'message-meta';
+                    meta.innerHTML = `<span>${msg.role === 'user' ? (AppState.settings.userName || 'Anda') : AppState.settings.aiName}</span><span>•</span><span>${msg.time}</span>`;
+                    row.appendChild(meta);
+
+                    const bubble = document.createElement('div');
+                    bubble.className = 'message-bubble';
+
+                    if (msg.role === 'ai' && shouldAnimate && AppState.settings.typingAnim) {
+                        bubble.innerHTML = '';
+                        row.appendChild(bubble);
+                        container.appendChild(row);
+
+                        let idx = 0;
+                        const formattedHTML = this.formatMarkdown(msg.content);
+                        // Fast typing animation
+                        bubble.innerHTML = formattedHTML;
+                    } else {
+                        bubble.innerHTML = this.formatMarkdown(msg.content);
+                        row.appendChild(bubble);
+                    }
+
+                    if (msg.role === 'ai') {
+                        const tools = document.createElement('div');
+                        tools.className = 'bubble-tools';
+
+                        const copyBtn = document.createElement('button');
+                        copyBtn.className = 'btn-bubble-tool';
+                        copyBtn.textContent = '📋 Salin';
+                        copyBtn.addEventListener('click', () => {
+                            navigator.clipboard.writeText(msg.content).then(() => {
+                                UI.toast('Teks jawaban disalin!', 'success');
+                            });
+                        });
+
+                        const speakBtn = document.createElement('button');
+                        speakBtn.className = 'btn-bubble-tool';
+                        speakBtn.textContent = '🔊 Dengar';
+                        speakBtn.addEventListener('click', () => {
+                            SpeechEngine.speak(msg.content);
+                        });
+
+                        tools.appendChild(copyBtn);
+                        tools.appendChild(speakBtn);
+                        bubble.appendChild(tools);
+                    }
+
+                    if (!shouldAnimate) {
+                        container.appendChild(row);
+                    }
+                    container.scrollTop = container.scrollHeight;
+                },
+
+                renderMessages() {
+                    const container = document.getElementById('chatMessages');
+                    if (!container) return;
+                    container.innerHTML = '';
+
+                    const session = ChatEngine.getActiveSession();
+                    if (!session || session.messages.length === 0) {
+                        this.updateHeaderTitle('Percakapan Baru');
+                        container.innerHTML = `
+                            <div class="welcome-card">
+                                <div class="welcome-title">Selamat Datang di ${AppState.settings.aiName} V6</div>
+                                <div class="welcome-desc">Asisten AI mandiri berbasis JavaScript. Siap memproses perhitungan, pembelajaran lokal, basis pengetahuan, dan pencarian web.</div>
+                                <div class="quick-chips-grid">
+                                    <div class="quick-chip" data-prompt="apa itu iklim">
+                                        <div class="quick-chip-title">🌍 Sains & Alam</div>
+                                        <div>Apa itu iklim?</div>
+                                    </div>
+                                    <div class="quick-chip" data-prompt="nama saya Nicholas">
+                                        <div class="quick-chip-title">🧠 Entity Memory</div>
+                                        <div>Nama saya Nicholas</div>
+                                    </div>
+                                    <div class="quick-chip" data-prompt="sin(30) + sqrt(25) * 4">
+                                        <div class="quick-chip-title">🧮 Safe Math Calculator</div>
+                                        <div>sin(30) + sqrt(25) * 4</div>
+                                    </div>
+                                    <div class="quick-chip" data-prompt="10 km ke meter">
+                                        <div class="quick-chip-title">🔄 Konversi Satuan</div>
+                                        <div>10 km ke meter</div>
+                                    </div>
+                                    <div class="quick-chip" data-prompt="jam berapa sekarang">
+                                        <div class="quick-chip-title">🕒 Tanggal & Waktu</div>
+                                        <div>Jam berapa sekarang?</div>
+                                    </div>
+                                    <div class="quick-chip" data-prompt="/help">
+                                        <div class="quick-chip-title">📖 Perintah Khusus</div>
+                                        <div>/help</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Bind quick chips
+                        container.querySelectorAll('.quick-chip').forEach(chip => {
+                            chip.addEventListener('click', () => {
+                                const prompt = chip.getAttribute('data-prompt');
+                                if (prompt) AgentCore.handleUserInput(prompt);
+                            });
+                        });
+                        return;
+                    }
+
+                    this.updateHeaderTitle(session.title);
+                    session.messages.forEach(m => this.renderMessageElement(m, false));
+                },
+
+                renderSidebar() {
+                    const listContainer = document.getElementById('sidebarListContainer');
+                    if (!listContainer) return;
+                    listContainer.innerHTML = '';
+
+                    if (AppState.activeNavTab === 'chats') {
+                        if (AppState.chats.length === 0) {
+                            listContainer.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:10px;">Belum ada riwayat obrolan.</div>';
+                            return;
+                        }
+
+                        AppState.chats.forEach(session => {
+                            const item = document.createElement('div');
+                            item.className = `chat-history-item ${session.id === AppState.activeChatId ? 'active' : ''}`;
+
+                            const titleSpan = document.createElement('span');
+                            titleSpan.textContent = session.title;
+                            titleSpan.style.flex = '1';
+                            titleSpan.style.overflow = 'hidden';
+                            titleSpan.style.textOverflow = 'ellipsis';
+                            titleSpan.style.whiteSpace = 'nowrap';
+
+                            const actions = document.createElement('div');
+                            actions.className = 'chat-item-actions';
+
+                            const btnRename = document.createElement('button');
+                            btnRename.className = 'action-icon-btn';
+                            btnRename.textContent = '✏️';
+                            btnRename.title = 'Ganti Nama';
+                            btnRename.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const newName = prompt('Ganti nama percakapan:', session.title);
+                                if (newName) ChatEngine.renameSession(session.id, newName);
+                            });
+
+                            const btnDelete = document.createElement('button');
+                            btnDelete.className = 'action-icon-btn delete';
+                            btnDelete.textContent = '🗑️';
+                            btnDelete.title = 'Hapus';
+                            btnDelete.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                if (confirm(`Hapus percakapan "${session.title}"?`)) {
+                                    ChatEngine.deleteSession(session.id);
+                                }
+                            });
+
+                            actions.appendChild(btnRename);
+                            actions.appendChild(btnDelete);
+
+                            item.appendChild(titleSpan);
+                            item.appendChild(actions);
+
+                            item.addEventListener('click', () => {
+                                AppState.activeChatId = session.id;
+                                saveState.activeChat();
+                                UI.renderSidebar();
+                                UI.renderMessages();
+                                UI.closeSidebarMobile();
+                            });
+
+                            listContainer.appendChild(item);
+                        });
+                    } else if (AppState.activeNavTab === 'memory') {
+                        const keys = Object.keys(AppState.memory);
+                        if (keys.length === 0) {
+                            listContainer.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:10px;">Belum ada memory tersimpan.<br><br><small>Ketik "nama saya [nama]" atau "hobi saya [hobi]".</small></div>';
+                        } else {
+                            keys.forEach(k => {
+                                const card = document.createElement('div');
+                                card.className = 'data-card';
+                                card.innerHTML = `
+                                    <div class="data-card-info">
+                                        <div class="data-card-title">${k}</div>
+                                        <div class="data-card-sub">${AppState.memory[k]}</div>
+                                    </div>
+                                `;
+                                const delBtn = document.createElement('button');
+                                delBtn.className = 'action-icon-btn delete';
+                                delBtn.textContent = '🗑️';
+                                delBtn.addEventListener('click', () => {
+                                    delete AppState.memory[k];
+                                    saveState.memory();
+                                    UI.renderSidebar();
+                                    UI.toast(`Memory "${k}" dihapus.`);
+                                });
+                                card.appendChild(delBtn);
+                                listContainer.appendChild(card);
+                            });
+                        }
+                    } else if (AppState.activeNavTab === 'knowledge') {
+                        AppState.knowledge.forEach((item, idx) => {
+                            const card = document.createElement('div');
+                            card.className = 'data-card';
+                            card.innerHTML = `
+                                <div class="data-card-info">
+                                    <div class="data-card-title">${item.q}</div>
+                                    <div class="data-card-sub">${item.a}</div>
+                                </div>
+                            `;
+                            const delBtn = document.createElement('button');
+                            delBtn.className = 'action-icon-btn delete';
+                            delBtn.textContent = '🗑️';
+                            delBtn.addEventListener('click', () => {
+                                AppState.knowledge.splice(idx, 1);
+                                saveState.knowledge();
+                                UI.renderSidebar();
+                                UI.toast('Item knowledge dihapus.');
+                            });
+                            card.appendChild(delBtn);
+                            listContainer.appendChild(card);
+                        });
+                    } else if (AppState.activeNavTab === 'learning') {
+                        AppState.intents.forEach((item, idx) => {
+                            const card = document.createElement('div');
+                            card.className = 'data-card';
+                            card.innerHTML = `
+                                <div class="data-card-info">
+                                    <div class="data-card-title">${item.intent}</div>
+                                    <div class="data-card-sub">${item.text}</div>
+                                </div>
+                            `;
+                            const delBtn = document.createElement('button');
+                            delBtn.className = 'action-icon-btn delete';
+                            delBtn.textContent = '🗑️';
+                            delBtn.addEventListener('click', () => {
+                                AppState.intents.splice(idx, 1);
+                                saveState.intents();
+                                UI.renderSidebar();
+                                UI.toast('Contoh training dihapus.');
+                            });
+                            card.appendChild(delBtn);
+                            listContainer.appendChild(card);
+                        });
+                    }
+                },
+
+                openModal(type) {
+                    const overlay = document.getElementById('appModalOverlay');
+                    const title = document.getElementById('modalTitle');
+                    const body = document.getElementById('modalBody');
+                    const footer = document.getElementById('modalFooter');
+
+                    if (!overlay || !title || !body || !footer) return;
+
+                    body.innerHTML = '';
+                    footer.innerHTML = '';
+
+                    switch (type) {
+                        case 'settings':
+                            title.textContent = '⚙️ Pengaturan AI Agent V6';
+                            body.innerHTML = `
+                                <div class="form-group">
+                                    <label class="form-label">Nama Asisten AI</label>
+                                    <input type="text" class="form-input" id="settingAiName" value="${AppState.settings.aiName}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Nama Pengguna</label>
+                                    <input type="text" class="form-input" id="settingUserName" value="${AppState.settings.userName}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Ukuran Font Teks</label>
+                                    <select class="form-select" id="settingFontSize">
+                                        <option value="14px" ${AppState.settings.fontSize === '14px' ? 'selected' : ''}>Kecil (14px)</option>
+                                        <option value="15px" ${AppState.settings.fontSize === '15px' ? 'selected' : ''}>Standar (15px)</option>
+                                        <option value="16px" ${AppState.settings.fontSize === '16px' ? 'selected' : ''}>Besar (16px)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Opsi Tambahan</label>
+                                    <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+                                        <input type="checkbox" id="settingAutoSearch" ${AppState.settings.autoSearch ? 'checked' : ''}>
+                                        Aktifkan Web Auto-Search & Google Fallback
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; margin-top:6px;">
+                                        <input type="checkbox" id="settingSpeechOutput" ${AppState.settings.speechOutput ? 'checked' : ''}>
+                                        Bicarakan Jawaban Otomatis (Text-to-Speech)
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; margin-top:6px;">
+                                        <input type="checkbox" id="settingTypingAnim" ${AppState.settings.typingAnim ? 'checked' : ''}>
+                                        Animasi Mengetik AI
+                                    </label>
+                                </div>
+                            `;
+
+                            const btnSave = document.createElement('button');
+                            btnSave.className = 'btn-primary';
+                            btnSave.textContent = 'Simpan Pengaturan';
+                            btnSave.addEventListener('click', () => {
+                                const aiName = document.getElementById('settingAiName').value;
+                                const userName = document.getElementById('settingUserName').value;
+                                const fontSize = document.getElementById('settingFontSize').value;
+                                const autoSearch = document.getElementById('settingAutoSearch').checked;
+                                const speechOutput = document.getElementById('settingSpeechOutput').checked;
+                                const typingAnim = document.getElementById('settingTypingAnim').checked;
+
+                                AppState.settings.aiName = aiName.trim() || 'Aura AI';
+                                AppState.settings.userName = userName.trim() || 'Nicholas';
+                                AppState.settings.autoSearch = autoSearch;
+                                AppState.settings.speechOutput = speechOutput;
+                                AppState.settings.typingAnim = typingAnim;
+
+                                UI.applyFontSize(fontSize);
+                                saveState.settings();
+                                UI.closeModal();
+                                UI.toast('Pengaturan berhasil disimpan!', 'success');
+                            });
+
+                            footer.appendChild(btnSave);
+                            break;
+
+                        case 'knowledge':
+                            title.textContent = '📚 Tambah Pengetahuan Baru';
+                            body.innerHTML = `
+                                <div class="form-group">
+                                    <label class="form-label">Pertanyaan / Kata Kunci</label>
+                                    <input type="text" class="form-input" id="kbInputQ" placeholder="Contoh: apa itu ozon">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Jawaban Lengkap</label>
+                                    <textarea class="form-textarea" id="kbInputA" placeholder="Contoh: Ozon adalah molekul gas yang tersusun atas tiga atom oksigen..."></textarea>
+                                </div>
+                            `;
+
+                            const btnSaveKB = document.createElement('button');
+                            btnSaveKB.className = 'btn-primary';
+                            btnSaveKB.textContent = 'Simpan Pengetahuan';
+                            btnSaveKB.addEventListener('click', () => {
+                                const q = document.getElementById('kbInputQ').value.trim();
+                                const a = document.getElementById('kbInputA').value.trim();
+                                if (!q || !a) {
+                                    UI.toast('Pertanyaan dan jawaban wajib diisi.', 'danger');
+                                    return;
+                                }
+                                AppState.knowledge.unshift({ q, a });
+                                saveState.knowledge();
+                                UI.renderSidebar();
+                                UI.closeModal();
+                                UI.toast('Pengetahuan baru berhasil disimpan!', 'success');
+                            });
+                            footer.appendChild(btnSaveKB);
+                            break;
+
+                        case 'learning':
+                            title.textContent = '🧠 Latih Intent Mandiri';
+                            body.innerHTML = `
+                                <div class="form-group">
+                                    <label class="form-label">Kategori Intent</label>
+                                    <input type="text" class="form-input" id="trainIntent" placeholder="Contoh: salam, tanya_jadwal, cuaca">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Contoh Kalimat Pengguna</label>
+                                    <input type="text" class="form-input" id="trainText" placeholder="Contoh: selamat pagi kawan">
+                                </div>
+                                <p style="font-size:0.8rem; color:var(--text-dim);">Anda juga dapat melatih via chat langsung: <code>ajari | intent | contoh kalimat</code></p>
+                            `;
+
+                            const btnTrain = document.createElement('button');
+                            btnTrain.className = 'btn-primary';
+                            btnTrain.textContent = 'Latih AI Sekarang';
+                            btnTrain.addEventListener('click', () => {
+                                const intent = document.getElementById('trainIntent').value.trim();
+                                const text = document.getElementById('trainText').value.trim();
+                                if (!intent || !text) {
+                                    UI.toast('Lengkapi intent dan contoh kalimat.', 'danger');
+                                    return;
+                                }
+                                AppState.intents.push({ intent: intent.toLowerCase(), text });
+                                saveState.intents();
+                                UI.renderSidebar();
+                                UI.closeModal();
+                                UI.toast(`Intent "${intent}" berhasil dilatih!`, 'success');
+                            });
+                            footer.appendChild(btnTrain);
+                            break;
+
+                        case 'files':
+                            title.textContent = '📄 Asisten Berkas TXT';
+                            body.innerHTML = `
+                                <div class="form-group">
+                                    <label class="form-label">Nama Berkas</label>
+                                    <input type="text" class="form-input" id="txtFileName" placeholder="catatan.txt" value="catatan.txt">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Isi Berkas</label>
+                                    <textarea class="form-textarea" id="txtFileContent" style="min-height:140px;" placeholder="Tulis isi file Anda di sini..."></textarea>
+                                </div>
+                            `;
+
+                            const btnDownloadTxt = document.createElement('button');
+                            btnDownloadTxt.className = 'btn-primary';
+                            btnDownloadTxt.textContent = '💾 Unduh Berkas TXT';
+                            btnDownloadTxt.addEventListener('click', () => {
+                                const name = document.getElementById('txtFileName').value.trim() || 'dokumen.txt';
+                                const content = document.getElementById('txtFileContent').value;
+                                FileManager.createFile(name, content);
+                                FileManager.download(name);
+                                UI.closeModal();
+                                UI.toast(`Berkas ${name} berhasil diunduh!`, 'success');
+                            });
+                            footer.appendChild(btnDownloadTxt);
+                            break;
+
+                        case 'backup':
+                            title.textContent = '💾 Export & Import Seluruh Data';
+                            body.innerHTML = `
+                                <div style="display:flex; flex-direction:column; gap:12px;">
+                                    <div>
+                                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:8px;">Ekspor seluruh memory, riwayat percakapan, dan basis pengetahuan ke file JSON:</p>
+                                        <button class="btn-primary" id="btnExportJSON" style="width:100%;">📤 Unduh Backup Data (JSON)</button>
+                                    </div>
+                                    <hr style="border:none; border-top:1px solid var(--border);">
+                                    <div>
+                                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:8px;">Pulihkan atau impor data dari file JSON backup:</p>
+                                        <input type="file" id="fileImportJSON" accept=".json" class="form-input" style="width:100%;">
+                                    </div>
+                                </div>
+                            `;
+
+                            setTimeout(() => {
+                                const btnExp = document.getElementById('btnExportJSON');
+                                const fileImp = document.getElementById('fileImportJSON');
+
+                                if (btnExp) {
+                                    btnExp.addEventListener('click', () => {
+                                        const fullData = {
+                                            version: '6.0',
+                                            exportedAt: new Date().toISOString(),
+                                            chats: AppState.chats,
+                                            memory: AppState.memory,
+                                            knowledge: AppState.knowledge,
+                                            intents: AppState.intents,
+                                            settings: AppState.settings
+                                        };
+                                        const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `AI_Agent_Backup_${Date.now()}.json`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                        UI.toast('Backup JSON berhasil dibuat!', 'success');
+                                    });
+                                }
+
+                                if (fileImp) {
+                                    fileImp.addEventListener('change', (e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            try {
+                                                const data = JSON.parse(event.target.result);
+                                                if (data.chats) AppState.chats = data.chats;
+                                                if (data.memory) AppState.memory = data.memory;
+                                                if (data.knowledge) AppState.knowledge = data.knowledge;
+                                                if (data.intents) AppState.intents = data.intents;
+                                                if (data.settings) AppState.settings = data.settings;
+
+                                                saveState.chats();
+                                                saveState.memory();
+                                                saveState.knowledge();
+                                                saveState.intents();
+                                                saveState.settings();
+
+                                                UI.closeModal();
+                                                UI.renderSidebar();
+                                                UI.renderMessages();
+                                                UI.toast('Data berhasil dipulihkan!', 'success');
+                                            } catch (err) {
+                                                UI.toast('Format berkas JSON tidak valid.', 'danger');
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    });
+                                }
+                            }, 50);
+                            break;
+                    }
+
+                    overlay.classList.add('active');
+                },
+
+                closeModal() {
+                    const overlay = document.getElementById('appModalOverlay');
+                    if (overlay) overlay.classList.remove('active');
+                },
+
+                toggleDebugDrawer() {
+                    const drawer = document.getElementById('debugDrawer');
+                    if (drawer) drawer.classList.toggle('active');
+                },
+
+                closeSidebarMobile() {
+                    const sidebar = document.getElementById('appSidebar');
+                    if (window.innerWidth <= 768 && sidebar) {
+                        sidebar.classList.remove('open');
+                    }
+                },
+
+                bindEvents() {
+                    // Send message button
+                    const btnSend = document.getElementById('btnSendMessage');
+                    const chatInput = document.getElementById('userChatInput');
+
+                    if (btnSend && chatInput) {
+                        btnSend.addEventListener('click', () => {
+                            AgentCore.handleUserInput(chatInput.value);
+                        });
+
+                        chatInput.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                AgentCore.handleUserInput(chatInput.value);
+                            }
+                        });
+
+                        // Auto expand textarea
+                        chatInput.addEventListener('input', () => {
+                            chatInput.style.height = 'auto';
+                            chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+                        });
+                    }
+
+                    // Voice button
+                    const btnVoice = document.getElementById('btnVoiceInput');
+                    if (btnVoice) {
+                        btnVoice.addEventListener('click', () => {
+                            SpeechEngine.toggleRecording();
+                        });
+                    }
+
+                    // Manual Search Button
+                    const btnManualSearch = document.getElementById('btnManualSearch');
+                    if (btnManualSearch && chatInput) {
+                        btnManualSearch.addEventListener('click', () => {
+                            const q = chatInput.value.trim();
+                            if (q) {
+                                SearchEngine.bukaGoogle(q);
+                                UI.toast(`Membuka Google Search untuk: "${q}"`, 'info');
+                            } else {
+                                UI.toast('Ketik kata kunci pencarian di kotak input.', 'warning');
+                            }
+                        });
+                    }
+
+                    // Top header buttons
+                    const btnHeaderSearch = document.getElementById('btnHeaderSearch');
+                    if (btnHeaderSearch && chatInput) {
+                        btnHeaderSearch.addEventListener('click', () => {
+                            const q = prompt('Masukkan kata kunci pencarian Google:', chatInput.value);
+                            if (q) SearchEngine.bukaGoogle(q);
+                        });
+                    }
+
+                    const btnHeaderClear = document.getElementById('btnHeaderClear');
+                    if (btnHeaderClear) {
+                        btnHeaderClear.addEventListener('click', () => {
+                            if (confirm('Bersihkan percakapan pada sesi ini?')) {
+                                ChatEngine.clearActiveMessages();
+                            }
+                        });
+                    }
+
+                    // Debug Toggle
+                    const btnToggleDebug = document.getElementById('btnToggleDebug');
+                    const btnCloseDebug = document.getElementById('btnCloseDebug');
+                    if (btnToggleDebug) btnToggleDebug.addEventListener('click', () => UI.toggleDebugDrawer());
+                    if (btnCloseDebug) btnCloseDebug.addEventListener('click', () => UI.toggleDebugDrawer());
+
+                    // Quick Chips Toolbar
+                    const chipCalc = document.getElementById('chipCalc');
+                    if (chipCalc && chatInput) {
+                        chipCalc.addEventListener('click', () => {
+                            chatInput.value = '/calc 25*4 + sqrt(144)';
+                            chatInput.focus();
+                        });
+                    }
+
+                    const chipConvert = document.getElementById('chipConvert');
+                    if (chipConvert && chatInput) {
+                        chipConvert.addEventListener('click', () => {
+                            chatInput.value = '100 km ke meter';
+                            chatInput.focus();
+                        });
+                    }
+
+                    const chipTime = document.getElementById('chipTime');
+                    if (chipTime) {
+                        chipTime.addEventListener('click', () => {
+                            AgentCore.handleUserInput('jam berapa sekarang');
+                        });
+                    }
+
+                    const chipLearn = document.getElementById('chipLearn');
+                    if (chipLearn && chatInput) {
+                        chipLearn.addEventListener('click', () => {
+                            chatInput.value = 'ajari | salam | halo asisten';
+                            chatInput.focus();
+                        });
+                    }
+
+                    // Sidebar Actions
+                    const btnNewChat = document.getElementById('btnNewChat');
+                    if (btnNewChat) {
+                        btnNewChat.addEventListener('click', () => {
+                            ChatEngine.createSession('Percakapan Baru');
+                            UI.closeSidebarMobile();
+                        });
+                    }
+
+                    // Tab bar in Sidebar
+                    const navTabs = document.querySelectorAll('.nav-tab-btn');
+                    navTabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            navTabs.forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+                            AppState.activeNavTab = tab.getAttribute('data-tab');
+                            UI.renderSidebar();
+                        });
+                    });
+
+                    // Mobile Drawer Toggles
+                    const btnOpenSidebar = document.getElementById('btnOpenSidebar');
+                    const btnCloseSidebar = document.getElementById('btnCloseSidebar');
+                    const sidebar = document.getElementById('appSidebar');
+
+                    if (btnOpenSidebar && sidebar) {
+                        btnOpenSidebar.addEventListener('click', () => sidebar.classList.add('open'));
+                    }
+                    if (btnCloseSidebar && sidebar) {
+                        btnCloseSidebar.addEventListener('click', () => sidebar.classList.remove('open'));
+                    }
+
+                    // Footer Buttons
+                    const btnTheme = document.getElementById('btnToggleTheme');
+                    if (btnTheme) {
+                        btnTheme.addEventListener('click', () => {
+                            const newTheme = AppState.settings.theme === 'dark' ? 'light' : 'dark';
+                            UI.applyTheme(newTheme);
+                        });
+                    }
+
+                    const btnSettings = document.getElementById('btnOpenSettings');
+                    if (btnSettings) btnSettings.addEventListener('click', () => UI.openModal('settings'));
+
+                    const btnFiles = document.getElementById('btnOpenFiles');
+                    if (btnFiles) btnFiles.addEventListener('click', () => UI.openModal('files'));
+
+                    const btnBackup = document.getElementById('btnOpenBackup');
+                    if (btnBackup) btnBackup.addEventListener('click', () => UI.openModal('backup'));
+
+                    // Modal Close Events
+                    const btnCloseModal = document.getElementById('btnCloseModal');
+                    const modalOverlay = document.getElementById('appModalOverlay');
+                    if (btnCloseModal) btnCloseModal.addEventListener('click', () => UI.closeModal());
+                    if (modalOverlay) {
+                        modalOverlay.addEventListener('click', (e) => {
+                            if (e.target === modalOverlay) UI.closeModal();
+                        });
+                    }
+                }
+            };
+
+            // Start the Application
+            UI.init();
+        });
+    </script>
+</body>
+</html>
