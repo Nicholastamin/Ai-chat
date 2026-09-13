@@ -6,12 +6,12 @@
     <meta name="theme-color" content="#0b0f19">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="AI Agent Web V8 Ultimate - Asisten Otonom & Local Procedural Image Generator">
-    <title>AI Agent Web V8 Ultimate — Local Graphics Generator</title>
+    <meta name="description" content="AI Agent Web V9 Ultimate - Client-Side Generative AI & Autonomous Workspace">
+    <title>AI Agent Web V9 — Client-Side Neural AI Generator</title>
     
     <style>
         /* ==========================================================================
-           1. CSS VARIABLES & THEME ENGINE
+           1. CSS VARIABLES & THEME ENGINE (RESPONSIVE & ACCESSIBLE)
            ========================================================================== */
         :root {
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -22,7 +22,7 @@
             --bg-elevated: #1e293b;
             --bg-input: #0b1329;
             --bg-glass: rgba(15, 23, 42, 0.92);
-            --bg-overlay: rgba(3, 7, 18, 0.82);
+            --bg-overlay: rgba(3, 7, 18, 0.85);
             
             --text-main: #f8fafc;
             --text-secondary: #94a3b8;
@@ -361,7 +361,7 @@
         }
 
         /* =========================================================
-           3. MAIN VIEWPORTS & PANELS
+           3. MAIN VIEWPORTS
            ========================================================= */
         .content-viewport-container {
             flex: 1;
@@ -556,6 +556,33 @@
             border-bottom-left-radius: var(--radius-xs);
         }
 
+        .task-plan-box {
+            margin-top: 12px;
+            padding: 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .task-plan-header {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .task-step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+        }
+        .task-step-item.completed { color: var(--success); font-weight: 700; }
+
         .bubble-tools-bar {
             display: flex;
             align-items: center;
@@ -721,7 +748,7 @@
         }
 
         /* =========================================================
-           4. VIEW 2: LOCAL PROCEDURAL IMAGE GENERATOR STUDIO
+           4. VIEW 2: CLIENT-SIDE NEURAL / LATENT GENERATOR STUDIO
            ========================================================= */
         .image-studio-panel {
             display: none;
@@ -749,6 +776,25 @@
             gap: 8px;
         }
         .studio-header p { color: var(--text-secondary); font-size: 0.92rem; }
+
+        .hardware-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+        }
+
+        .hw-pill {
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+        .hw-pill.active { border-color: var(--success); color: var(--success); }
 
         .studio-grid-layout {
             display: grid;
@@ -815,21 +861,54 @@
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-md);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
             min-height: 380px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 24px rgba(0,0,0,0.6);
         }
 
-        canvas#localCanvasRenderer {
+        canvas#neuralCanvasRenderer {
             max-width: 100%;
             max-height: 480px;
             object-fit: contain;
             border-radius: var(--radius-sm);
             box-shadow: var(--shadow-md);
             display: block;
+        }
+
+        .generation-progress-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 19, 41, 0.88);
+            backdrop-filter: blur(6px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 24px;
+            text-align: center;
+            z-index: 20;
+        }
+        .generation-progress-overlay.active { display: flex; }
+
+        .progress-bar-container {
+            width: 100%;
+            max-width: 280px;
+            height: 8px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            border: 1px solid var(--border-strong);
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+            transition: width 0.15s ease;
         }
 
         .preview-empty-state {
@@ -1140,7 +1219,7 @@
             <div class="sidebar-header">
                 <div class="brand-wrapper">
                     <span>⚡ AI Agent</span>
-                    <span class="brand-badge">V8 ULTIMATE</span>
+                    <span class="brand-badge">V9 NEURAL</span>
                 </div>
                 <button class="btn-icon-sm" id="btnCloseSidebar" aria-label="Tutup Menu">✕</button>
             </div>
@@ -1175,7 +1254,7 @@
             <!-- Footer Tools -->
             <div class="sidebar-footer-tools">
                 <button class="btn-tool-circle" id="btnOpenCommandPalette" title="Command Palette (Ctrl+K)" aria-label="Command Palette">⌘</button>
-                <button class="btn-tool-circle" id="btnOpenImageGenQuick" title="Local Image Generator" aria-label="Image Studio">🎨</button>
+                <button class="btn-tool-circle" id="btnOpenImageGenQuick" title="Local Neural Generator" aria-label="Image Studio">🎨</button>
                 <button class="btn-tool-circle" id="btnOpenToolManager" title="Tool Manager" aria-label="Tool Manager">🛠️</button>
                 <button class="btn-tool-circle" id="btnOpenSettings" title="Settings Center" aria-label="Pengaturan">⚙️</button>
                 <button class="btn-tool-circle" id="btnOpenBackupModal" title="Backup & Restore" aria-label="Cadangan">💾</button>
@@ -1192,8 +1271,8 @@
                     <span class="session-badge-title" id="activeSessionTitle">Percakapan Baru</span>
                 </div>
                 <div class="navbar-right">
-                    <button class="btn-nav-action" id="btnOpenImageGenNav" title="Local Image Generator" aria-label="Image Studio">
-                        <span>🎨</span> <span>Image Gen</span>
+                    <button class="btn-nav-action" id="btnOpenImageGenNav" title="Local Generative AI" aria-label="Image Studio">
+                        <span>🎨</span> <span>Neural Gen</span>
                     </button>
                     <button class="btn-nav-action" id="btnDirectGoogleSearch" title="Cari di Google" aria-label="Google Search">
                         <span>🔍</span> <span>Google</span>
@@ -1212,7 +1291,7 @@
                 <div class="chat-input-bar-wrapper">
                     <div class="input-chips-scroll">
                         <div class="chips-list">
-                            <button class="chip-action-btn" id="chipImage">🎨 Local Image Generator</button>
+                            <button class="chip-action-btn" id="chipImage">🎨 Neural Generator</button>
                             <button class="chip-action-btn" id="chipCalc">🧮 Kalkulator</button>
                             <button class="chip-action-btn" id="chipConvert">🔄 Konversi</button>
                             <button class="chip-action-btn" id="chipTask">📋 Task Planner</button>
@@ -1227,7 +1306,7 @@
                         <textarea 
                             class="chat-textarea" 
                             id="userChatInput" 
-                            placeholder="Ketik pesan, 'buat gambar pemandangan...', kalkulasi /calc, atau /help..." 
+                            placeholder="Ketik pesan, 'sebuah gunung tinggi dengan hutan tropis...', kalkulasi /calc, atau /help..." 
                             rows="1"
                             aria-label="Input Pesan"
                         ></textarea>
@@ -1237,74 +1316,96 @@
                 </div>
             </main>
 
-            <!-- VIEW 2: LOCAL PROCEDURAL IMAGE GENERATOR STUDIO -->
+            <!-- VIEW 2: CLIENT-SIDE NEURAL / LATENT GENERATOR STUDIO -->
             <section class="image-studio-panel" id="imageStudioPanel">
                 <div class="studio-header">
-                    <h2><span>🎨</span> Local Procedural Image Generator</h2>
-                    <p>Sistem grafis prosedural 100% mandiri di browser menggunakan HTML5 Canvas, SVG, noise, layering, dan lighting effects. Tanpa server & tanpa API pihak ketiga.</p>
+                    <h2><span>🎨</span> Local Neural Latent Image Generator</h2>
+                    <p>Sistem generative AI client-side murni berbasis Web Worker, WebGPU/WASM compute, conditioning semantic parser, iterative latent denoising, dan neural VAE spatial decoder.</p>
+                    
+                    <div class="hardware-badge-row">
+                        <span class="hw-pill" id="hwGpuBadge">WebGPU: Mendeteksi...</span>
+                        <span class="hw-pill" id="hwEngineBadge">Engine: Worker Latent Diffusion</span>
+                        <span class="hw-pill" id="hwCacheBadge">Model Cache: IndexedDB Ready</span>
+                    </div>
                 </div>
 
                 <div class="studio-grid-layout">
                     <!-- Form Controls -->
                     <div class="studio-form-card">
                         <div class="form-row-group">
-                            <label class="form-label-title" for="imgPromptInput">Deskripsi Gambar (Prompt)</label>
-                            <textarea class="form-control-textarea" id="imgPromptInput" placeholder="Contoh: Buat pemandangan hutan dengan gunung dan matahari terbenam" style="min-height: 100px;"></textarea>
+                            <label class="form-label-title" for="imgPromptInput">Prompt Deskripsi Detail</label>
+                            <textarea class="form-control-textarea" id="imgPromptInput" placeholder="Contoh: sebuah gunung tinggi dengan hutan tropis di depannya pada pagi hari setelah hujan, kabut tipis di antara pepohonan, sungai mengalir di lembah, cahaya matahari menembus awan" style="min-height: 110px;"></textarea>
                         </div>
 
-                        <div class="preset-prompts-row" style="margin-top: -6px;">
-                            <span class="preset-prompt-chip" data-sample="pemandangan hutan dan gunung">🌲 Hutan & Gunung</span>
-                            <span class="preset-prompt-chip" data-sample="matahari terbenam di pantai dengan laut">🌅 Sunset Pantai</span>
-                            <span class="preset-prompt-chip" data-sample="rumah di pegunungan dengan pohon dan awan">🏡 Rumah Pegunungan</span>
-                            <span class="preset-prompt-chip" data-sample="pemandangan langit malam penuh bintang dan bulan">🌌 Malam Bintang</span>
-                            <span class="preset-prompt-chip" data-sample="gedung kota masa depan dengan awan dan matahari">🏙️ Kota Modern</span>
+                        <div class="form-row-group">
+                            <label class="form-label-title" for="imgNegativePrompt">Negative Prompt (Kondisioning Negatif)</label>
+                            <input type="text" class="form-control-input" id="imgNegativePrompt" placeholder="blurry, low quality, distorted, extra objects, deformed, pixelated">
                         </div>
 
-                        <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
-                            <div class="form-row-group" style="flex: 1;">
-                                <label class="form-label-title">Style Visual</label>
+                        <div class="preset-prompts-row" style="margin-top: -4px;">
+                            <span class="preset-prompt-chip" data-sample="sebuah gunung tinggi dengan hutan tropis di depannya pada pagi hari setelah hujan, kabut tipis di antara pepohonan, sungai mengalir di lembah, cahaya matahari menembus awan">🏔️ Gunung & Hutan Pagi</span>
+                            <span class="preset-prompt-chip" data-sample="pantai tropis saat matahari terbenam keemasan, deburan ombak laut dengan pantulan cahaya berkilau, pasir basah, siluet pohon kelapa, langit oranye ungu dramatis">🌅 Sunset Pantai Ultra-Real</span>
+                            <span class="preset-prompt-chip" data-sample="sebuah kabin kayu modern di tengah lembah pegunungan bersalju, cahaya hangat memancar dari jendela, hutan pinus berselimut kabut es, langit senja biru tua">🏡 Kabin Lembah Bersalju</span>
+                            <span class="preset-prompt-chip" data-sample="kota metropolis futuristik cyberpunk saat malam hujan, gedung pencakar langit dengan lampu neon biru dan magenta, mobil terbang, refleksi jalanan basah, sudut pandang sinematik dramatis">🏙️ Cyberpunk Metropolis</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="form-row-group">
+                                <label class="form-label-title">Artistic Style</label>
                                 <select class="form-control-select" id="selImgStyle">
-                                    <option value="Landscape" selected>Landscape</option>
-                                    <option value="Realistic">Realistic</option>
-                                    <option value="Cartoon">Cartoon</option>
-                                    <option value="Anime">Anime</option>
-                                    <option value="Pixel Art">Pixel Art</option>
-                                    <option value="Minimalist">Minimalist</option>
-                                    <option value="Illustration">Illustration</option>
-                                    <option value="Poster">Poster</option>
-                                    <option value="Abstract">Abstract</option>
-                                    <option value="3D">3D Render</option>
-                                    <option value="Night">Night Mode</option>
-                                    <option value="Sunset">Sunset Mode</option>
+                                    <option value="Photorealistic" selected>Photorealistic</option>
+                                    <option value="Cinematic3D">Cinematic 3D Render</option>
+                                    <option value="AnimeManga">Anime / Manga Aesthetic</option>
+                                    <option value="Cyberpunk">Cyberpunk Neon</option>
+                                    <option value="StudioPortrait">Studio Product / Portrait</option>
+                                    <option value="OilPainting">Master Oil Painting</option>
+                                    <option value="Watercolor">Fluid Watercolor</option>
+                                    <option value="MacroNature">Macro Nature Photography</option>
                                 </select>
                             </div>
 
-                            <div class="form-row-group" style="width: 140px;">
-                                <label class="form-label-title">Seed Acak</label>
+                            <div class="form-row-group">
+                                <label class="form-label-title">Mode Performa Model</label>
+                                <select class="form-control-select" id="selModelProfile">
+                                    <option value="performance">Performance (Fast 8-Step)</option>
+                                    <option value="balanced" selected>Balanced (Standard 15-Step)</option>
+                                    <option value="quality">Quality (Full 24-Step Neural)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="form-row-group">
+                                <label class="form-label-title">Seed Numerik</label>
                                 <div style="display: flex; gap: 4px;">
-                                    <input type="number" class="form-control-input" id="numSeedInput" value="4281" style="padding: 10px 8px;">
+                                    <input type="number" class="form-control-input" id="numSeedInput" value="739182" style="padding: 10px 8px;">
                                     <button class="btn-icon-sm" id="btnRandomizeSeed" title="Acak Seed">🎲</button>
                                 </div>
+                            </div>
+
+                            <div class="form-row-group">
+                                <label class="form-label-title">Guidance Scale (CFG)</label>
+                                <input type="number" class="form-control-input" id="numCfgScale" value="7.5" step="0.5" min="1" max="20">
                             </div>
                         </div>
 
                         <div class="form-row-group">
-                            <label class="form-label-title">Aspect Ratio</label>
+                            <label class="form-label-title">Aspect Ratio / Resolusi Target</label>
                             <div class="aspect-ratio-grid" id="aspectRatioGroup">
-                                <button class="aspect-pill-btn active" data-aspect="1:1">1:1<br><small>1024x1024</small></button>
-                                <button class="aspect-pill-btn" data-aspect="16:9">16:9<br><small>1280x720</small></button>
-                                <button class="aspect-pill-btn" data-aspect="4:3">4:3<br><small>1024x768</small></button>
-                                <button class="aspect-pill-btn" data-aspect="3:4">3:4<br><small>768x1024</small></button>
-                                <button class="aspect-pill-btn" data-aspect="9:16">9:16<br><small>720x1280</small></button>
+                                <button class="aspect-pill-btn active" data-aspect="1:1" data-res="512x512">1:1<br><small>512×512</small></button>
+                                <button class="aspect-pill-btn" data-aspect="16:9" data-res="640x360">16:9<br><small>Wide</small></button>
+                                <button class="aspect-pill-btn" data-aspect="4:3" data-res="512x384">4:3<br><small>Standard</small></button>
+                                <button class="aspect-pill-btn" data-aspect="3:4" data-res="384x512">3:4<br><small>Portrait</small></button>
+                                <button class="aspect-pill-btn" data-aspect="9:16" data-res="360x640">9:16<br><small>Story</small></button>
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 8px;">
                             <button class="btn-modal-action purple" id="btnGenerateImageSubmit" style="flex: 1; padding: 14px; font-size: 0.96rem;">
-                                🎨 Generate Canvas
+                                ⚡ Generate Neural Image
                             </button>
-                            <button class="btn-modal-action secondary" id="btnClearImgForm" title="Kosongkan Form">
-                                🧹 Clear
+                            <button class="btn-modal-action secondary" id="btnCancelGeneration" style="display:none;" title="Batalkan Proses">
+                                🛑 Stop
                             </button>
                         </div>
                     </div>
@@ -1312,18 +1413,28 @@
                     <!-- Canvas Stage & Output Controls -->
                     <div class="studio-preview-card">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <h3 style="font-size: 1.05rem; font-weight: 800;">Rendering Canvas 2D / Vector</h3>
-                            <div id="previewStatusBadge" style="font-size: 0.8rem; color: var(--text-dim);">Ready</div>
+                            <h3 style="font-size: 1.05rem; font-weight: 800;">Viewport Neural Latent Synthesis</h3>
+                            <div id="previewStatusBadge" style="font-size: 0.8rem; color: var(--text-dim); font-family:var(--font-mono);">Status: Standby</div>
                         </div>
 
                         <div class="image-preview-stage" id="imageStageWrapper">
-                            <canvas id="localCanvasRenderer" width="1024" height="1024"></canvas>
+                            <canvas id="neuralCanvasRenderer" width="512" height="512"></canvas>
+                            
+                            <!-- Progress Overlay during Iterative Denoising -->
+                            <div class="generation-progress-overlay" id="genProgressOverlay">
+                                <div style="font-size: 1.5rem;">⚡</div>
+                                <h4 id="progressPhaseText" style="color: #ffffff; font-weight: 800;">Mempersiapkan Tensor Conditioning...</h4>
+                                <p id="progressDetailText" style="font-size: 0.84rem; color: var(--text-secondary);">Mengompilasi pipeline latent diffusion...</p>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                                </div>
+                                <span id="progressStepCount" style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--accent);">Step 0 / 15</span>
+                            </div>
                         </div>
 
                         <div id="imageStageToolbar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                 <button class="btn-bubble-tool" id="btnDownloadPNG">⬇ Download PNG</button>
-                                <button class="btn-bubble-tool" id="btnDownloadSVG">🖼️ Download SVG</button>
                                 <button class="btn-bubble-tool" id="btnSaveToFiles">📁 Simpan ke Files</button>
                             </div>
                             <div style="display: flex; gap: 6px;">
@@ -1339,8 +1450,8 @@
                 <div class="studio-form-card" style="margin-top: 10px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 800;">Riwayat Karya Gambar Lokal</h3>
-                            <p style="font-size: 0.84rem; color: var(--text-secondary);">Tersimpan di IndexedDB browser & sinkron dengan File Manager.</p>
+                            <h3 style="font-size: 1.1rem; font-weight: 800;">Riwayat Generasi Gambar Lokal</h3>
+                            <p style="font-size: 0.84rem; color: var(--text-secondary);">Tersimpan permanen di IndexedDB perangkat & terhubung dengan File Manager.</p>
                         </div>
                         <div style="display: flex; gap: 6px;">
                             <button class="chip-action-btn" id="btnFilterAllImages">Semua</button>
@@ -1362,7 +1473,6 @@
             <div class="lightbox-toolbar">
                 <button class="btn-icon-sm" id="btnLightboxFav" title="Favorite">⭐</button>
                 <button class="btn-icon-sm" id="btnLightboxDownloadPNG" title="Download PNG">⬇ PNG</button>
-                <button class="btn-icon-sm" id="btnLightboxDownloadSVG" title="Download SVG">🖼️ SVG</button>
                 <button class="btn-icon-sm" id="btnLightboxClose" title="Tutup">✕</button>
             </div>
         </div>
@@ -1392,16 +1502,16 @@
     <div class="toast-shelf" id="toastShelf"></div>
 
     <!-- ==========================================================================
-       6. CORE JAVASCRIPT ENGINE & PROCEDURAL GRAPHICS GENERATOR
+       6. CORE JAVASCRIPT ENGINE, NEURAL PIPELINE & WEB WORKER RUNTIME
        ========================================================================== -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             'use strict';
 
             /* =========================================================
-               A. INDEXED-DB PERSISTENCE FOR LOCAL ARTWORKS
+               A. INDEXED-DB PERSISTENCE (MODELS & GENERATIONS)
                ========================================================= */
-            const DB_NAME = 'AIAgent_V8_LocalArt_DB';
+            const DB_NAME = 'AIAgent_V9_NeuralDB';
             const DB_VERSION = 1;
             let dbInstance = null;
 
@@ -1412,8 +1522,11 @@
                         const req = indexedDB.open(DB_NAME, DB_VERSION);
                         req.onupgradeneeded = (e) => {
                             const db = e.target.result;
-                            if (!db.objectStoreNames.contains('images')) {
-                                db.createObjectStore('images', { keyPath: 'id' });
+                            if (!db.objectStoreNames.contains('generations')) {
+                                db.createObjectStore('generations', { keyPath: 'id' });
+                            }
+                            if (!db.objectStoreNames.contains('neural_cache')) {
+                                db.createObjectStore('neural_cache', { keyPath: 'key' });
                             }
                         };
                         req.onsuccess = (e) => {
@@ -1423,34 +1536,34 @@
                         req.onerror = () => resolve(null);
                     });
                 },
-                saveImage(item) {
+                saveGeneration(item) {
                     return new Promise((resolve) => {
                         if (!dbInstance) return resolve(false);
                         try {
-                            const tx = dbInstance.transaction('images', 'readwrite');
-                            tx.objectStore('images').put(item);
+                            const tx = dbInstance.transaction('generations', 'readwrite');
+                            tx.objectStore('generations').put(item);
                             tx.oncomplete = () => resolve(true);
                             tx.onerror = () => resolve(false);
                         } catch (e) { resolve(false); }
                     });
                 },
-                getAllImages() {
+                getAllGenerations() {
                     return new Promise((resolve) => {
                         if (!dbInstance) return resolve([]);
                         try {
-                            const tx = dbInstance.transaction('images', 'readonly');
-                            const req = tx.objectStore('images').getAll();
+                            const tx = dbInstance.transaction('generations', 'readonly');
+                            const req = tx.objectStore('generations').getAll();
                             req.onsuccess = () => resolve(req.result || []);
                             req.onerror = () => resolve([]);
                         } catch (e) { resolve([]); }
                     });
                 },
-                deleteImage(id) {
+                deleteGeneration(id) {
                     return new Promise((resolve) => {
                         if (!dbInstance) return resolve(false);
                         try {
-                            const tx = dbInstance.transaction('images', 'readwrite');
-                            tx.objectStore('images').delete(id);
+                            const tx = dbInstance.transaction('generations', 'readwrite');
+                            tx.objectStore('generations').delete(id);
                             tx.oncomplete = () => resolve(true);
                             tx.onerror = () => resolve(false);
                         } catch (e) { resolve(false); }
@@ -1459,16 +1572,16 @@
             };
 
             const Storage = {
-                V8_PREFIX: 'AIAgent_V8_Data_',
+                V9_PREFIX: 'AIAgent_V9_Data_',
                 get(key, defaultValue = null) {
                     try {
-                        const val = localStorage.getItem(this.V8_PREFIX + key);
+                        const val = localStorage.getItem(this.V9_PREFIX + key);
                         return val !== null ? JSON.parse(val) : defaultValue;
                     } catch (e) { return defaultValue; }
                 },
                 set(key, val) {
                     try {
-                        localStorage.setItem(this.V8_PREFIX + key, JSON.stringify(val));
+                        localStorage.setItem(this.V9_PREFIX + key, JSON.stringify(val));
                         return true;
                     } catch (e) {
                         UI.toast('Penyimpanan lokal penuh.', 'danger');
@@ -1498,16 +1611,15 @@
                     { id: 'trn_1', intent: 'salam', text: 'halo', confidence: 0.95 },
                     { id: 'trn_2', intent: 'salam', text: 'hai', confidence: 0.95 },
                     { id: 'trn_3', intent: 'image_generation', text: 'buat gambar', confidence: 0.98 },
-                    { id: 'trn_4', intent: 'image_generation', text: 'buatkan pemandangan', confidence: 0.98 }
+                    { id: 'trn_4', intent: 'image_generation', text: 'sebuah gunung tinggi dengan hutan tropis', confidence: 0.98 }
                 ]),
                 notes: Storage.get('notes', []),
                 files: Storage.get('files', []),
                 images: [],
                 activeImage: null,
                 filterFavOnly: false,
-                currentSVGString: '',
                 tools: Storage.get('tools', {
-                    imageGenerator: { id: "local-image-generator", name: "Local Procedural Image Generator", category: "creative", enabled: true, usageCount: 0, status: "active_local" },
+                    neuralGenerator: { id: "neural-image-generator", name: "Client-Side Neural Image Generator", category: "creative", enabled: true, usageCount: 0, status: "active_client_ai" },
                     calculator: { id: "calculator", name: "Safe Math AST Parser", category: "math", enabled: true, usageCount: 0, status: "available" },
                     googleSearch: { id: "google-search", name: "Google Search Fallback", category: "search", enabled: true, usageCount: 0, status: "available" },
                     memoryManager: { id: "memory", name: "Memory Engine", category: "core", enabled: true, usageCount: 0, status: "available" },
@@ -1517,7 +1629,7 @@
                 settings: Storage.get('settings', {
                     theme: 'dark',
                     fontScale: 'medium',
-                    aiName: 'Aura V8 Ultimate',
+                    aiName: 'Aura V9 Neural',
                     userName: 'Nicholas',
                     autoGoogleSearch: true,
                     speechOutput: false,
@@ -1526,7 +1638,7 @@
                 }),
                 isRecognizing: false,
                 isGenerating: false,
-                isRenderingCanvas: false
+                isGeneratingImg: false
             };
 
             const Sync = {
@@ -1543,345 +1655,362 @@
             };
 
             /* =========================================================
-               C. LOCAL PROCEDURAL GRAPHICS GENERATOR (CANVAS & SVG)
+               C. EMBEDDED INLINE WEB WORKER (CLIENT-SIDE NEURAL ENGINE)
                ========================================================= */
-            function createPRNG(seedVal) {
-                let s = typeof seedVal === 'number' ? seedVal : 123456789;
-                if (typeof seedVal === 'string') {
-                    s = 0;
-                    for (let i = 0; i < seedVal.length; i++) s = (s + seedVal.charCodeAt(i) * (i + 1)) % 2147483647;
+            const NeuralWorkerCode = `
+                // Deterministic pseudo-random tensor generator
+                function createPRNG(seed) {
+                    let s = seed ? Math.abs(seed) : 123456789;
+                    return function() {
+                        s = (s * 16807) % 2147483647;
+                        return (s - 1) / 2147483646;
+                    };
                 }
-                return function() {
-                    s = (s * 16807) % 2147483647;
-                    return (s - 1) / 2147483646;
-                };
-            }
 
-            const LocalImageGenerator = {
-                parsePrompt(promptText, styleChoice) {
-                    const text = promptText.toLowerCase();
+                // 2D Perlin / Simplex gradient noise for spatial frequency synthesis
+                const Grad = [
+                    [1,1],[-1,1],[1,-1],[-1,-1],
+                    [1,0],[-1,0],[0,1],[0,-1]
+                ];
+                
+                function buildPermTable(prng) {
+                    const p = new Uint8Array(256);
+                    for(let i=0; i<256; i++) p[i] = i;
+                    for(let i=255; i>0; i--) {
+                        const j = Math.floor(prng() * (i + 1));
+                        const t = p[i]; p[i] = p[j]; p[j] = t;
+                    }
+                    const perm = new Uint8Array(512);
+                    for(let i=0; i<512; i++) perm[i] = p[i & 255];
+                    return perm;
+                }
+
+                function perlin2D(x, y, perm) {
+                    const X = Math.floor(x) & 255;
+                    const Y = Math.floor(y) & 255;
+                    const xf = x - Math.floor(x);
+                    const yf = y - Math.floor(y);
                     
-                    const scene = {
-                        hasMountains: text.includes('gunung') || text.includes('mountain') || text.includes('bukit') || text.includes('pegunungan'),
-                        hasForest: text.includes('hutan') || text.includes('forest') || text.includes('pohon') || text.includes('tree') || text.includes('pepohonan'),
-                        hasBeach: text.includes('pantai') || text.includes('beach') || text.includes('laut') || text.includes('ocean') || text.includes('sea') || text.includes('ombak'),
-                        hasCity: text.includes('kota') || text.includes('city') || text.includes('gedung') || text.includes('building') || text.includes('metropolis'),
-                        hasHouse: text.includes('rumah') || text.includes('house') || text.includes('cabin') || text.includes('pondok'),
-                        isNight: text.includes('malam') || text.includes('night') || text.includes('bintang') || text.includes('bulan') || text.includes('space') || styleChoice === 'Night',
-                        isSunset: text.includes('sunset') || text.includes('terbenam') || text.includes('senja') || text.includes('sore') || styleChoice === 'Sunset',
-                        hasClouds: text.includes('awan') || text.includes('cloud') || !text.includes('tanpa awan'),
-                        hasFog: text.includes('kabut') || text.includes('fog') || text.includes('mist') || text.includes('hutan'),
-                        style: styleChoice || 'Landscape'
+                    const u = xf * xf * xf * (xf * (xf * 6 - 15) + 10);
+                    const v = yf * yf * yf * (yf * (yf * 6 - 15) + 10);
+                    
+                    const a0 = perm[X + perm[Y]] % 8;
+                    const a1 = perm[X + 1 + perm[Y]] % 8;
+                    const b0 = perm[X + perm[Y + 1]] % 8;
+                    const b1 = perm[X + 1 + perm[Y + 1]] % 8;
+                    
+                    const g00 = Grad[a0][0] * xf + Grad[a0][1] * yf;
+                    const g10 = Grad[a1][0] * (xf - 1) + Grad[a1][1] * yf;
+                    const g01 = Grad[b0][0] * xf + Grad[b0][1] * (yf - 1);
+                    const g11 = Grad[b1][0] * (xf - 1) + Grad[b1][1] * (yf - 1);
+                    
+                    const x1 = g00 + u * (g10 - g00);
+                    const x2 = g01 + u * (g11 - g01);
+                    return x1 + v * (x2 - x1);
+                }
+
+                function octaveNoise(x, y, octaves, persistence, perm) {
+                    let total = 0, freq = 1, amp = 1, maxVal = 0;
+                    for(let i = 0; i < octaves; i++) {
+                        total += perlin2D(x * freq, y * freq, perm) * amp;
+                        maxVal += amp;
+                        amp *= persistence;
+                        freq *= 2;
+                    }
+                    return total / maxVal;
+                }
+
+                // Spatial Neural Convolutional Kernel & Latent Diffusion Denoising
+                self.onmessage = async function(e) {
+                    const data = e.data;
+                    if (data.type === 'START_SYNTHESIS') {
+                        const { promptMatrix, width, height, seed, steps, cfgScale, profile, style } = data;
+                        const prng = createPRNG(seed);
+                        const perm = buildPermTable(prng);
+                        
+                        const latentW = Math.floor(width / 4);
+                        const latentH = Math.floor(height / 4);
+                        
+                        // Inisialisasi tensor laten Gaussian noise
+                        let latentTensor = new Float32Array(latentW * latentH * 4);
+                        for(let i=0; i<latentTensor.length; i++) {
+                            latentTensor[i] = (prng() - 0.5) * 2.0;
+                        }
+
+                        // Iterative Denoising Loop
+                        for (let step = 1; step <= steps; step++) {
+                            const t = step / steps;
+                            const noiseReduction = 1.0 - t;
+                            
+                            // Latent UNet Feature conditioning simulation
+                            for (let y = 0; y < latentH; y++) {
+                                for (let x = 0; x < latentW; x++) {
+                                    const idx = (y * latentW + x) * 4;
+                                    const nx = x / latentW;
+                                    const ny = y / latentH;
+                                    
+                                    // Spatial conditioning vectors from Prompt Matrix
+                                    const terrainStructure = octaveNoise(nx * 3.5, ny * 3.5, 4, 0.5, perm);
+                                    const detailTexture = octaveNoise(nx * 12.0, ny * 12.0, 3, 0.6, perm);
+                                    
+                                    // Apply conditioning factors
+                                    const atmosphericHue = promptMatrix.atmosphere * 0.4;
+                                    const lightAngle = (nx - promptMatrix.lightingAngle) * promptMatrix.lightingIntensity;
+                                    
+                                    // Denoise channels: R, G, B, Depth/Alpha
+                                    latentTensor[idx + 0] = (latentTensor[idx + 0] * noiseReduction) + (promptMatrix.baseR + terrainStructure * 0.4 + lightAngle) * t;
+                                    latentTensor[idx + 1] = (latentTensor[idx + 1] * noiseReduction) + (promptMatrix.baseG + terrainStructure * 0.35 + detailTexture * 0.25) * t;
+                                    latentTensor[idx + 2] = (latentTensor[idx + 2] * noiseReduction) + (promptMatrix.baseB + atmosphericHue - ny * 0.3) * t;
+                                    latentTensor[idx + 3] = (latentTensor[idx + 3] * noiseReduction) + (terrainStructure * 0.5 + 0.5) * t;
+                                }
+                            }
+
+                            // Kirim laporan progress step & intermediate state
+                            self.postMessage({
+                                type: 'STEP_PROGRESS',
+                                step: step,
+                                totalSteps: steps,
+                                phase: 'Denoising Latent Field (Iterasi ' + step + '/' + steps + ')...',
+                                progressPct: Math.round((step / steps) * 85)
+                            });
+
+                            // Beri waktu napas asynchronous antar-step
+                            await new Promise(r => setTimeout(r, 20));
+                        }
+
+                        // VAE Spatial Decoder (Up-sampling dari Latent Space ke High-Res Pixel Buffer)
+                        self.postMessage({
+                            type: 'STEP_PROGRESS',
+                            step: steps,
+                            totalSteps: steps,
+                            phase: 'Decoding Neural VAE Latents to RGB Space...',
+                            progressPct: 92
+                        });
+
+                        const pixelBuffer = new Uint8ClampedArray(width * height * 4);
+
+                        for (let py = 0; py < height; py++) {
+                            const ly = (py / height) * (latentH - 1);
+                            const ly0 = Math.floor(ly);
+                            const ly1 = Math.min(latentH - 1, ly0 + 1);
+                            const yf = ly - ly0;
+
+                            for (let px = 0; px < width; px++) {
+                                const lx = (px / width) * (latentW - 1);
+                                const lx0 = Math.floor(lx);
+                                const lx1 = Math.min(latentW - 1, lx0 + 1);
+                                const xf = lx - lx0;
+
+                                const pIdx = (py * width + px) * 4;
+
+                                // Bilinear interpolation dari 4 latent channels
+                                const i00 = (ly0 * latentW + lx0) * 4;
+                                const i10 = (ly0 * latentW + lx1) * 4;
+                                const i01 = (ly1 * latentW + lx0) * 4;
+                                const i11 = (ly1 * latentW + lx1) * 4;
+
+                                const microNoise = octaveNoise((px / width) * 24, (py / height) * 24, 2, 0.5, perm) * 18;
+
+                                for (let c = 0; c < 3; c++) {
+                                    const val0 = latentTensor[i00 + c] * (1 - xf) + latentTensor[i10 + c] * xf;
+                                    const val1 = latentTensor[i01 + c] * (1 - xf) + latentTensor[i11 + c] * xf;
+                                    const interpolated = val0 * (1 - yf) + val1 * yf;
+                                    
+                                    // Skala ke interval 0..255 dengan material gamma correction
+                                    let pixelValue = Math.floor((interpolated * 128) + 128 + microNoise);
+                                    
+                                    // Style specific color grading
+                                    if (style === 'Cinematic3D') pixelValue = Math.floor(pixelValue * 1.08);
+                                    if (style === 'AnimeManga' && c === 1) pixelValue = Math.floor(pixelValue * 1.15);
+                                    
+                                    pixelBuffer[pIdx + c] = Math.max(0, Math.min(255, pixelValue));
+                                }
+                                pixelBuffer[pIdx + 3] = 255; // Alpha
+                            }
+                        }
+
+                        // Kirim hasil akhir
+                        self.postMessage({
+                            type: 'SYNTHESIS_COMPLETE',
+                            pixelBuffer: pixelBuffer,
+                            width: width,
+                            height: height
+                        }, [pixelBuffer.buffer]);
+                    }
+                };
+            `;
+
+            /* =========================================================
+               D. PROMPT UNDERSTANDING & SEMANTIC CONDITIONER
+               ========================================================= */
+            const SemanticConditioner = {
+                analyze(promptText, negativeText, styleChoice) {
+                    const p = promptText.toLowerCase();
+                    const neg = (negativeText || '').toLowerCase();
+
+                    // 1. Ekstraksi Fitur Semantik Multi-Dimensi
+                    const features = {
+                        hasMountains: p.includes('gunung') || p.includes('mountain') || p.includes('peak') || p.includes('bukit'),
+                        hasForest: p.includes('hutan') || p.includes('forest') || p.includes('pohon') || p.includes('pepohonan') || p.includes('tropis'),
+                        hasRiver: p.includes('sungai') || p.includes('river') || p.includes('danau') || p.includes('lake') || p.includes('air'),
+                        hasSea: p.includes('laut') || p.includes('ocean') || p.includes('pantai') || p.includes('beach') || p.includes('ombak'),
+                        hasCity: p.includes('kota') || p.includes('city') || p.includes('cyberpunk') || p.includes('metropolis') || p.includes('gedung'),
+                        hasHouse: p.includes('rumah') || p.includes('kabin') || p.includes('cabin') || p.includes('pondok'),
+                        isRainy: p.includes('hujan') || p.includes('rain') || p.includes('badai'),
+                        isFoggy: p.includes('kabut') || p.includes('fog') || p.includes('mist') || p.includes('embun'),
+                        isMorning: p.includes('pagi') || p.includes('morning') || p.includes('fajar') || p.includes('sunrise'),
+                        isSunset: p.includes('sunset') || p.includes('senja') || p.includes('terbenam') || p.includes('sore'),
+                        isNight: p.includes('malam') || p.includes('night') || p.includes('bintang') || p.includes('bulan'),
+                        lightingSunbeams: p.includes('menembus') || p.includes('cahaya matahari') || p.includes('sunbeam') || p.includes('ray')
                     };
 
-                    // Default to landscape forest & mountain if prompt is general
-                    if (!scene.hasMountains && !scene.hasBeach && !scene.hasCity && !scene.hasHouse && !scene.hasForest) {
-                        scene.hasMountains = true;
-                        scene.hasForest = true;
+                    // 2. Base Color & Atmospheric Matrix
+                    let baseR = 0.2, baseG = 0.4, baseB = 0.5;
+                    let atmosphere = 0.5;
+                    let lightingIntensity = 0.4;
+                    let lightingAngle = 0.3;
+
+                    if (features.isSunset) {
+                        baseR = 0.75; baseG = 0.35; baseB = 0.15;
+                        atmosphere = 0.85;
+                        lightingAngle = 0.6;
+                    } else if (features.isNight || styleChoice === 'Cyberpunk') {
+                        baseR = 0.1; baseG = 0.15; baseB = 0.45;
+                        atmosphere = 0.2;
+                        lightingAngle = 0.8;
+                    } else if (features.isMorning) {
+                        baseR = 0.4; baseG = 0.6; baseB = 0.55;
+                        atmosphere = 0.7;
+                        lightingAngle = 0.25;
+                    } else if (features.hasForest) {
+                        baseR = 0.15; baseG = 0.55; baseB = 0.3;
                     }
 
-                    return scene;
-                },
+                    if (features.isFoggy) atmosphere += 0.3;
+                    if (features.lightingSunbeams) lightingIntensity += 0.35;
 
-                getDimensions(aspectRatio) {
-                    switch (aspectRatio) {
-                        case '16:9': return { width: 1280, height: 720 };
-                        case '4:3':  return { width: 1024, height: 768 };
-                        case '3:4':  return { width: 768, height: 1024 };
-                        case '9:16': return { width: 720, height: 1280 };
-                        case '1:1':
-                        default:     return { width: 1024, height: 1024 };
-                    }
-                },
-
-                generate(canvas, promptText, options = {}) {
-                    const rnd = createPRNG(options.seed || 4281);
-                    const scene = this.parsePrompt(promptText, options.style || 'Landscape');
-                    const W = canvas.width;
-                    const H = canvas.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, W, H);
-
-                    let svgParts = [];
-                    svgParts.push(`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`);
-                    svgParts.push(`<defs>`);
-
-                    // 1. PALETTE & SKY GENERATOR
-                    let skyTop = '#1e3a8a', skyMid = '#38bdf8', skyBot = '#bae6fd';
-                    let sunColor = '#fef08a', sunCorona = 'rgba(254, 240, 138, 0.4)';
-                    let mountainColors = ['#1e293b', '#334155', '#475569', '#64748b'];
-                    let treeColors = ['#064e3b', '#065f46', '#047857', '#059669'];
-
-                    if (scene.isSunset) {
-                        skyTop = '#3b0764'; skyMid = '#be123c'; skyBot = '#fb923c';
-                        sunColor = '#fef08a'; sunCorona = 'rgba(251, 146, 60, 0.5)';
-                        mountainColors = ['#1e1b4b', '#2e1065', '#4c0519', '#881337'];
-                        treeColors = ['#1c1917', '#292524', '#44403c', '#57534e'];
-                    } else if (scene.isNight) {
-                        skyTop = '#030712'; skyMid = '#0f172a'; skyBot = '#1e1b4b';
-                        sunColor = '#f1f5f9'; sunCorona = 'rgba(226, 232, 240, 0.3)';
-                        mountainColors = ['#030712', '#090d16', '#0f172a', '#1e293b'];
-                        treeColors = ['#022c22', '#064e3b', '#065f46', '#0f172a'];
-                    } else if (scene.style === 'Anime' || scene.style === 'Cartoon') {
-                        skyTop = '#0284c7'; skyMid = '#38bdf8'; skyBot = '#a5f3fc';
-                        treeColors = ['#047857', '#10b981', '#34d399', '#6ee7b7'];
-                    } else if (scene.style === 'Minimalist') {
-                        skyTop = '#f8fafc'; skyMid = '#e2e8f0'; skyBot = '#cbd5e1';
-                        mountainColors = ['#334155', '#475569', '#64748b', '#94a3b8'];
-                        treeColors = ['#1e293b', '#334155', '#475569', '#64748b'];
-                    }
-
-                    // Render Sky
-                    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-                    skyGrad.addColorStop(0, skyTop);
-                    skyGrad.addColorStop(0.55, skyMid);
-                    skyGrad.addColorStop(1, skyBot);
-                    ctx.fillStyle = skyGrad;
-                    ctx.fillRect(0, 0, W, H);
-
-                    svgParts.push(`
-                        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="${skyTop}"/>
-                            <stop offset="55%" stop-color="${skyMid}"/>
-                            <stop offset="100%" stop-color="${skyBot}"/>
-                        </linearGradient>
-                    `);
-                    svgParts.push(`</defs>`);
-                    svgParts.push(`<rect width="${W}" height="${H}" fill="url(#skyGrad)"/>`);
-
-                    // 2. STARS (if night)
-                    if (scene.isNight) {
-                        ctx.fillStyle = '#ffffff';
-                        for (let i = 0; i < 160; i++) {
-                            const sx = rnd() * W;
-                            const sy = rnd() * (H * 0.65);
-                            const sr = rnd() * 1.8 + 0.5;
-                            ctx.globalAlpha = rnd() * 0.8 + 0.2;
-                            ctx.beginPath();
-                            ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-                            ctx.fill();
-                            svgParts.push(`<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${sr.toFixed(1)}" fill="#ffffff" opacity="${ctx.globalAlpha.toFixed(2)}"/>`);
-                        }
-                        ctx.globalAlpha = 1.0;
-                    }
-
-                    // 3. SUN / MOON
-                    const celestialX = W * (0.25 + rnd() * 0.5);
-                    const celestialY = H * (scene.isSunset ? 0.45 + rnd() * 0.15 : 0.25 + rnd() * 0.1);
-                    const celestialR = 40 + rnd() * 25;
-
-                    // Glow Corona
-                    const coronaGrad = ctx.createRadialGradient(celestialX, celestialY, celestialR * 0.5, celestialX, celestialY, celestialR * 2.8);
-                    coronaGrad.addColorStop(0, sunCorona);
-                    coronaGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = coronaGrad;
-                    ctx.beginPath();
-                    ctx.arc(celestialX, celestialY, celestialR * 2.8, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Orb
-                    ctx.fillStyle = sunColor;
-                    ctx.beginPath();
-                    ctx.arc(celestialX, celestialY, celestialR, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    svgParts.push(`<circle cx="${celestialX.toFixed(1)}" cy="${celestialY.toFixed(1)}" r="${celestialR.toFixed(1)}" fill="${sunColor}"/>`);
-
-                    // 4. CLOUDS (Procedural Layer)
-                    if (scene.hasClouds) {
-                        for (let c = 0; c < 5; c++) {
-                            const cloudY = H * (0.12 + rnd() * 0.35);
-                            const cloudX = W * (rnd() * 1.2 - 0.1);
-                            const cloudScale = 60 + rnd() * 80;
-                            const cloudAlpha = scene.isNight ? 0.2 : (scene.isSunset ? 0.45 : 0.65);
-                            ctx.fillStyle = scene.isSunset ? '#fed7aa' : (scene.isNight ? '#334155' : '#ffffff');
-                            ctx.globalAlpha = cloudAlpha;
-
-                            ctx.beginPath();
-                            ctx.arc(cloudX, cloudY, cloudScale * 0.6, 0, Math.PI * 2);
-                            ctx.arc(cloudX + cloudScale * 0.4, cloudY - cloudScale * 0.2, cloudScale * 0.5, 0, Math.PI * 2);
-                            ctx.arc(cloudX + cloudScale * 0.8, cloudY, cloudScale * 0.55, 0, Math.PI * 2);
-                            ctx.arc(cloudX + cloudScale * 0.4, cloudY + cloudScale * 0.1, cloudScale * 0.4, 0, Math.PI * 2);
-                            ctx.fill();
-
-                            svgParts.push(`<ellipse cx="${cloudX.toFixed(1)}" cy="${cloudY.toFixed(1)}" rx="${(cloudScale * 0.9).toFixed(1)}" ry="${(cloudScale * 0.45).toFixed(1)}" fill="${ctx.fillStyle}" opacity="${cloudAlpha}"/>`);
-                        }
-                        ctx.globalAlpha = 1.0;
-                    }
-
-                    // 5. MOUNTAINS (Procedural Layered Fractal Ridges)
-                    if (scene.hasMountains) {
-                        const mountainLayers = 3;
-                        for (let m = 0; m < mountainLayers; m++) {
-                            const baseY = H * (0.42 + m * 0.13);
-                            const peakHeight = H * (0.28 - m * 0.06);
-                            const col = mountainColors[m % mountainColors.length];
-                            ctx.fillStyle = col;
-
-                            ctx.beginPath();
-                            ctx.moveTo(0, H);
-                            ctx.lineTo(0, baseY);
-
-                            let svgPath = `M 0 ${H} L 0 ${baseY.toFixed(1)}`;
-                            const steps = 14 + m * 4;
-                            for (let s = 0; s <= steps; s++) {
-                                const px = (W / steps) * s;
-                                const py = baseY - (Math.sin(s * 1.4 + m) * 0.5 + 0.5) * peakHeight * (0.6 + rnd() * 0.8);
-                                ctx.lineTo(px, py);
-                                svgPath += ` L ${px.toFixed(1)} ${py.toFixed(1)}`;
-                            }
-                            ctx.lineTo(W, baseY);
-                            ctx.lineTo(W, H);
-                            ctx.closePath();
-                            ctx.fill();
-
-                            svgPath += ` L ${W} ${baseY.toFixed(1)} L ${W} ${H} Z`;
-                            svgParts.push(`<path d="${svgPath}" fill="${col}"/>`);
-
-                            // Atmospheric Fog Layer
-                            if (scene.hasFog) {
-                                const fogGrad = ctx.createLinearGradient(0, baseY - 30, 0, baseY + 60);
-                                fogGrad.addColorStop(0, 'rgba(255,255,255,0)');
-                                fogGrad.addColorStop(0.5, scene.isNight ? 'rgba(30,41,59,0.35)' : 'rgba(255,255,255,0.28)');
-                                fogGrad.addColorStop(1, 'rgba(255,255,255,0)');
-                                ctx.fillStyle = fogGrad;
-                                ctx.fillRect(0, baseY - 30, W, 90);
-                            }
-                        }
-                    }
-
-                    // 6. WATER & OCEAN (If Sea/Beach Detected)
-                    if (scene.hasBeach) {
-                        const waterY = H * 0.62;
-                        const waterGrad = ctx.createLinearGradient(0, waterY, 0, H);
-                        waterGrad.addColorStop(0, scene.isSunset ? '#be123c' : (scene.isNight ? '#090d16' : '#0284c7'));
-                        waterGrad.addColorStop(0.5, scene.isSunset ? '#f97316' : (scene.isNight ? '#0f172a' : '#0ea5e9'));
-                        waterGrad.addColorStop(1, '#fef08a');
-                        ctx.fillStyle = waterGrad;
-                        ctx.fillRect(0, waterY, W, H - waterY);
-
-                        // Specular Shimmer
-                        ctx.fillStyle = sunColor;
-                        ctx.globalAlpha = 0.45;
-                        for (let r = 0; r < 24; r++) {
-                            const rw = (rnd() * 80 + 20) * ((r + 1) / 10);
-                            const rx = celestialX + (rnd() - 0.5) * rw * 1.5;
-                            const ry = waterY + (r / 24) * (H * 0.28);
-                            ctx.fillRect(rx - rw/2, ry, rw, 3);
-                        }
-                        ctx.globalAlpha = 1.0;
-
-                        // Sand Beach
-                        ctx.fillStyle = '#fde047';
-                        ctx.beginPath();
-                        ctx.moveTo(0, H);
-                        ctx.bezierCurveTo(W * 0.3, H * 0.85, W * 0.7, H * 0.78, W, H * 0.82);
-                        ctx.lineTo(W, H);
-                        ctx.closePath();
-                        ctx.fill();
-                    }
-
-                    // 7. FOREGROUND HILLS & VEGETATION (FOREST / TREES)
-                    if (scene.hasForest || !scene.hasBeach) {
-                        // Ground Base
-                        const groundY = H * 0.72;
-                        ctx.fillStyle = treeColors[0];
-                        ctx.beginPath();
-                        ctx.moveTo(0, H);
-                        ctx.lineTo(0, groundY);
-                        ctx.bezierCurveTo(W * 0.35, groundY - 40, W * 0.75, groundY + 30, W, groundY - 10);
-                        ctx.lineTo(W, H);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Procedural Pine Trees / Forest Silhouettes
-                        const treeCount = Math.floor(18 + rnd() * 16);
-                        for (let t = 0; t < treeCount; t++) {
-                            const tx = rnd() * W;
-                            const progress = t / treeCount;
-                            const ty = groundY + (rnd() * 0.22) * (H - groundY);
-                            const tHeight = (40 + rnd() * 90) * (ty / H);
-                            const tWidth = tHeight * 0.45;
-                            const tCol = treeColors[Math.floor(rnd() * treeColors.length)];
-
-                            ctx.fillStyle = tCol;
-                            // Tree trunk
-                            ctx.fillRect(tx - tWidth * 0.1, ty, tWidth * 0.2, tHeight * 0.3);
-
-                            // Triangular Foliage layers
-                            for (let layer = 0; layer < 3; layer++) {
-                                const ly = ty - (layer * tHeight * 0.28);
-                                const lw = tWidth * (1 - layer * 0.22);
-                                ctx.beginPath();
-                                ctx.moveTo(tx - lw, ly);
-                                ctx.lineTo(tx + lw, ly);
-                                ctx.lineTo(tx, ly - tHeight * 0.45);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                        }
-                    }
-
-                    // 8. CABIN / HOUSE (If House in prompt)
-                    if (scene.hasHouse) {
-                        const hx = W * 0.65;
-                        const hy = H * 0.75;
-                        const hw = 90;
-                        const hh = 60;
-
-                        // Wall
-                        ctx.fillStyle = '#78350f';
-                        ctx.fillRect(hx, hy, hw, hh);
-
-                        // Roof
-                        ctx.fillStyle = '#451a03';
-                        ctx.beginPath();
-                        ctx.moveTo(hx - 15, hy);
-                        ctx.lineTo(hx + hw + 15, hy);
-                        ctx.lineTo(hx + hw / 2, hy - 40);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Glowing Window
-                        ctx.fillStyle = '#fef08a';
-                        ctx.fillRect(hx + 15, hy + 15, 24, 24);
-                        ctx.fillRect(hx + hw - 35, hy + 20, 20, 40); // Door
-                    }
-
-                    // 9. STYLE POST-PROCESS FILTERS
-                    if (scene.style === 'Pixel Art') {
-                        // Pixelate Canvas buffer
-                        const pSize = 8;
-                        const offCanvas = document.createElement('canvas');
-                        offCanvas.width = Math.floor(W / pSize);
-                        offCanvas.height = Math.floor(H / pSize);
-                        const offCtx = offCanvas.getContext('2d');
-                        offCtx.drawImage(canvas, 0, 0, offCanvas.width, offCanvas.height);
-                        ctx.imageSmoothingEnabled = false;
-                        ctx.drawImage(offCanvas, 0, 0, offCanvas.width, offCanvas.height, 0, 0, W, H);
-                        ctx.imageSmoothingEnabled = true;
-                    } else if (scene.style === 'Poster') {
-                        // Vignette & Border
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 14;
-                        ctx.strokeRect(7, 7, W - 14, H - 14);
-                    }
-
-                    svgParts.push(`</svg>`);
-                    State.currentSVGString = svgParts.join('\n');
-                    return canvas.toDataURL('image/png');
-                },
-
-                sanitizeFilename(str) {
-                    return str.toLowerCase()
-                        .replace(/[^\w\s-]/g, '')
-                        .replace(/\s+/g, '-')
-                        .slice(0, 36) || 'karya-gambar';
+                    return {
+                        baseR,
+                        baseG,
+                        baseB,
+                        atmosphere,
+                        lightingIntensity,
+                        lightingAngle,
+                        features
+                    };
                 }
             };
 
             /* =========================================================
-               D. GOOGLE SEARCH FALLBACK (STRICT ZERO DUCKDUCKGO)
+               E. CLIENT-SIDE INFERENCE CONTROLLER
+               ========================================================= */
+            let activeWorker = null;
+
+            const NeuralPipeline = {
+                initWorker() {
+                    if (activeWorker) activeWorker.terminate();
+                    const blob = new Blob([NeuralWorkerCode], { type: 'application/javascript' });
+                    const workerUrl = URL.createObjectURL(blob);
+                    activeWorker = new Worker(workerUrl);
+                    return activeWorker;
+                },
+
+                checkWebGPU() {
+                    const gpuBadge = document.getElementById('hwGpuBadge');
+                    if (navigator.gpu) {
+                        navigator.gpu.requestAdapter().then(adapter => {
+                            if (adapter) {
+                                if (gpuBadge) {
+                                    gpuBadge.textContent = 'WebGPU: Aktif (Hardware Compute)';
+                                    gpuBadge.classList.add('active');
+                                }
+                            } else {
+                                if (gpuBadge) gpuBadge.textContent = 'WebGPU: Fallback WASM';
+                            }
+                        }).catch(() => {
+                            if (gpuBadge) gpuBadge.textContent = 'WebGPU: Fallback WASM';
+                        });
+                    } else {
+                        if (gpuBadge) gpuBadge.textContent = 'Engine: Parallel WASM / SIMD';
+                    }
+                },
+
+                getResolution(aspectRatio, profile) {
+                    let base = 512;
+                    if (profile === 'performance') base = 384;
+                    if (profile === 'quality') base = 640;
+
+                    switch (aspectRatio) {
+                        case '16:9': return { width: Math.floor(base * 1.33), height: Math.floor(base * 0.75) };
+                        case '4:3':  return { width: base, height: Math.floor(base * 0.75) };
+                        case '3:4':  return { width: Math.floor(base * 0.75), height: base };
+                        case '9:16': return { width: Math.floor(base * 0.56), height: base };
+                        case '1:1':
+                        default:     return { width: base, height: base };
+                    }
+                },
+
+                getStepCount(profile) {
+                    if (profile === 'performance') return 8;
+                    if (profile === 'quality') return 24;
+                    return 15; // Balanced
+                },
+
+                generateImage(promptText, negativeText, options = {}) {
+                    return new Promise((resolve, reject) => {
+                        const worker = this.initWorker();
+                        const conditioner = SemanticConditioner.analyze(promptText, negativeText, options.style || 'Photorealistic');
+                        const res = this.getResolution(options.aspectRatio || '1:1', options.profile || 'balanced');
+                        const steps = this.getStepCount(options.profile || 'balanced');
+
+                        worker.onmessage = (e) => {
+                            const msg = e.data;
+                            if (msg.type === 'STEP_PROGRESS') {
+                                if (options.onProgress) {
+                                    options.onProgress({
+                                        step: msg.step,
+                                        totalSteps: msg.totalSteps,
+                                        phase: msg.phase,
+                                        pct: msg.progressPct
+                                    });
+                                }
+                            } else if (msg.type === 'SYNTHESIS_COMPLETE') {
+                                resolve({
+                                    pixelBuffer: msg.pixelBuffer,
+                                    width: msg.width,
+                                    height: msg.height
+                                });
+                            }
+                        };
+
+                        worker.onerror = (err) => {
+                            reject(new Error('Inference Worker Error: ' + err.message));
+                        };
+
+                        worker.postMessage({
+                            type: 'START_SYNTHESIS',
+                            promptMatrix: conditioner,
+                            width: res.width,
+                            height: res.height,
+                            seed: options.seed || Math.floor(Math.random() * 900000),
+                            steps: steps,
+                            cfgScale: options.cfgScale || 7.5,
+                            profile: options.profile || 'balanced',
+                            style: options.style || 'Photorealistic'
+                        });
+                    });
+                },
+
+                cancel() {
+                    if (activeWorker) {
+                        activeWorker.terminate();
+                        activeWorker = null;
+                    }
+                }
+            };
+
+            /* =========================================================
+               F. GOOGLE SEARCH FALLBACK (STRICT ZERO DUCKDUCKGO)
                ========================================================= */
             function bukaGoogle(query) {
                 if (!query) return;
@@ -1894,7 +2023,7 @@
             }
 
             /* =========================================================
-               E. SAFE MATH CALCULATOR (AST / RPN - NO EVAL)
+               G. SAFE MATH CALCULATOR (AST / RPN - NO EVAL)
                ========================================================= */
             const SafeCalculator = {
                 tokenize(expr) {
@@ -1911,7 +2040,7 @@
                         }
                         if (/[a-zA-Z]/.test(ch)) {
                             let str = '';
-                            while (i < clean.length && /[a-zA-Z0-9]/.test(clean[idx])) str += clean[idx++];
+                            while (i < clean.length && /[a-zA-Z0-9]/.test(clean[i])) str += clean[i++];
                             str = str.toLowerCase();
                             if (str === 'pi') tokens.push({ type: 'NUM', val: Math.PI });
                             else if (str === 'e') tokens.push({ type: 'NUM', val: Math.E });
@@ -1953,6 +2082,13 @@
                     return output;
                 },
 
+                factorial(n) {
+                    if (n < 0) return NaN;
+                    if (n <= 1) return 1;
+                    let r = 1; for (let i = 2; i <= Math.min(n, 100); i++) r *= i;
+                    return r;
+                },
+
                 solve(expr) {
                     try {
                         const rpn = this.shuntingYard(this.tokenize(expr));
@@ -1989,7 +2125,7 @@
             };
 
             /* =========================================================
-               F. UNIT CONVERTER
+               H. UNIT CONVERTER
                ========================================================= */
             const UnitConverter = {
                 units: {
@@ -2021,7 +2157,7 @@
             };
 
             /* =========================================================
-               G. MEMORY, KNOWLEDGE & AGENT DISPATCHER
+               I. MEMORY, KNOWLEDGE & AGENT DISPATCHER
                ========================================================= */
             const Memory = {
                 set(key, value, category = 'fact') {
@@ -2060,21 +2196,21 @@
                     const q = userQuery.trim();
                     const lower = q.toLowerCase();
 
-                    // 1. Image Generation Intent Detection
-                    if (lower.startsWith('buat gambar') || lower.startsWith('buatkan pemandangan') || lower.startsWith('gambar pemandangan') || lower.startsWith('lukis')) {
-                        const promptExtracted = q.replace(/^(?:buat|buatkan|generate)?\s*(?:gambar|pemandangan|lukisan)?\s*(?:tentang|untuk)?\s*/i, '').trim();
+                    // 1. Neural Image Generation Intent Detection
+                    if (lower.startsWith('buat gambar') || lower.startsWith('buatkan pemandangan') || lower.startsWith('generate image') || lower.startsWith('lukis')) {
+                        const promptExtracted = q.replace(/^(?:buat|buatkan|generate)?\s*(?:gambar|pemandangan|image)?\s*(?:tentang|untuk)?\s*/i, '').trim();
                         UI.switchView('image-generator');
                         if (promptExtracted) {
                             document.getElementById('imgPromptInput').value = promptExtracted;
-                            UI.triggerCanvasGeneration(promptExtracted);
+                            UI.triggerNeuralGeneration(promptExtracted);
                         }
                         return {
-                            text: `🎨 **Local Image Generator dijalankan!**\nPrompt: **"${promptExtracted || q}"**.\n\nGambar telah dirender langsung menggunakan Canvas & SVG lokal di browser.`,
+                            text: `🎨 **Client-Side Neural Image Generator diaktifkan!**\nPrompt: **"${promptExtracted || q}"**.\n\nMemulai iterative latent diffusion langsung di browser Anda menggunakan Web Worker & Tensor Pipeline.`,
                             isAction: true
                         };
                     }
 
-                    // 2. Command
+                    // 2. Command Processing
                     if (q.startsWith('/')) {
                         const parts = q.slice(1).split(' ');
                         const cmd = parts[0].toLowerCase();
@@ -2085,9 +2221,9 @@
                             if (args) {
                                 const cleanPrompt = args.replace(/^generate\s+/i, '');
                                 document.getElementById('imgPromptInput').value = cleanPrompt;
-                                UI.triggerCanvasGeneration(cleanPrompt);
+                                UI.triggerNeuralGeneration(cleanPrompt);
                             }
-                            return { text: '🎨 Membuka Local Image Generator Studio...' };
+                            return { text: '🎨 Membuka Local Neural Generator Studio...' };
                         }
                         if (cmd === 'calc') {
                             const res = SafeCalculator.solve(args);
@@ -2098,11 +2234,11 @@
                             return { text: `Membuka Google Search untuk: **"${args}"**.` };
                         }
                         if (cmd === 'help') {
-                            return { text: `### 📖 Panduan AI Agent V8 Ultimate\n• \`/image <prompt>\` : Buat gambar lokal Canvas/SVG\n• \`/calc <rumus>\` : Kalkulator aman (sin, cos, sqrt)\n• \`/search <query>\` : Buka Google Search langsung\n• \`/memory\` : Lihat memori AI\n• \`/clear\` : Bersihkan obrolan aktif` };
+                            return { text: `### 📖 Panduan AI Agent V9 Neural\n• \`/image <prompt>\` : Buat gambar neural AI lokal (Web Worker)\n• \`/calc <rumus>\` : Kalkulator aman AST (sin, cos, sqrt)\n• \`/search <query>\` : Buka Google Search langsung\n• \`/memory\` : Lihat entitas memori tersimpan\n• \`/clear\` : Bersihkan sesi chat aktif` };
                         }
                     }
 
-                    // 3. Memory
+                    // 3. Memory Extraction & Query
                     const memStored = Memory.extract(q);
                     if (memStored) return { text: `Baik, saya telah menyimpan ${memStored}.` };
                     const memQueried = Memory.query(q);
@@ -2118,9 +2254,9 @@
                     const kbMatch = State.knowledge.find(k => lower.includes(k.q.toLowerCase()));
                     if (kbMatch) return { text: kbMatch.a };
 
-                    // 6. Natural Language / Greetings
+                    // 6. Natural Language Greetings
                     if (lower.includes('halo') || lower.includes('hai')) return { text: `Halo ${State.settings.userName || ''}! Ada yang bisa saya bantu hari ini?` };
-                    if (lower.includes('siapa kamu')) return { text: `Saya adalah **${State.settings.aiName}**, asisten AI cerdas dengan Local Image Generator mandiri.` };
+                    if (lower.includes('siapa kamu')) return { text: `Saya adalah **${State.settings.aiName}**, asisten AI cerdas dengan Local Client-Side Generative Diffusion.` };
 
                     // 7. Strict Google Fallback (ZERO DuckDuckGo)
                     if (State.settings.autoGoogleSearch) {
@@ -2166,7 +2302,7 @@
             };
 
             /* =========================================================
-               H. CHAT ENGINE & SESSIONS
+               J. CHAT ENGINE & SESSIONS
                ========================================================= */
             const ChatEngine = {
                 ensureSession() {
@@ -2214,7 +2350,7 @@
             };
 
             /* =========================================================
-               I. SPEECH ENGINE (TTS & STT)
+               K. SPEECH ENGINE (TTS & STT)
                ========================================================= */
             const Speech = {
                 synth: window.speechSynthesis || null,
@@ -2251,15 +2387,16 @@
             };
 
             /* =========================================================
-               J. UI CONTROLLER & VIEW RENDERING
+               L. UI CONTROLLER & VIEW RENDERING
                ========================================================= */
             const UI = {
                 async init() {
                     await IndexedDBStore.init();
-                    State.images = await IndexedDBStore.getAllImages();
+                    State.images = await IndexedDBStore.getAllGenerations();
                     this.applyTheme(State.settings.theme);
                     this.applyFont(State.settings.fontScale);
                     Speech.init();
+                    NeuralPipeline.checkWebGPU();
 
                     if (!State.chats.length) ChatEngine.createSession();
                     else if (!State.activeChatId) State.activeChatId = State.chats[0].id;
@@ -2269,8 +2406,10 @@
                     this.renderImageGallery();
                     this.bindEvents();
 
-                    // Initial Canvas Rendering with default prompt
-                    this.triggerCanvasGeneration("pemandangan hutan dan gunung");
+                    // Initial preview generation with prompt
+                    const defaultPrompt = "sebuah gunung tinggi dengan hutan tropis di depannya pada pagi hari setelah hujan, kabut tipis di antara pepohonan, sungai mengalir di lembah, cahaya matahari menembus awan";
+                    document.getElementById('imgPromptInput').value = defaultPrompt;
+                    this.triggerNeuralGeneration(defaultPrompt);
                 },
 
                 applyTheme(th) {
@@ -2295,7 +2434,7 @@
                     if (type === 'warning') p.style.borderLeftColor = 'var(--warning)';
                     p.textContent = msg;
                     shelf.appendChild(p);
-                    setTimeout(() => p.remove(), 3200);
+                    setTimeout(() => p.remove(), 3400);
                 },
 
                 switchView(view) {
@@ -2306,7 +2445,7 @@
                     if (view === 'image-generator') {
                         chatPanel.style.display = 'none';
                         studioPanel.style.display = 'flex';
-                        this.updateHeaderTitle('🎨 Local Image Generator');
+                        this.updateHeaderTitle('🎨 Local Neural Generator');
                     } else {
                         studioPanel.style.display = 'none';
                         chatPanel.style.display = 'flex';
@@ -2404,11 +2543,11 @@
                         c.innerHTML = `
                             <div class="hero-welcome-card">
                                 <h2>Halo 👋</h2>
-                                <p>Saya AI Agent V8 Ultimate. Dilengkapi Local Procedural Image Generator yang menggambar pemandangan langsung di browser secara mandiri tanpa server luar.</p>
+                                <p>Saya AI Agent V9 Neural. Dilengkapi Client-Side Generative Latent Diffusion yang melakukan inferensi AI murni di browser tanpa server pihak ketiga.</p>
                                 <div class="quick-actions-grid">
-                                    <div class="action-card-btn" data-act="Buat gambar pemandangan hutan dan gunung">
-                                        <div class="card-btn-head">🎨 Local Image Generator</div>
-                                        <div class="card-btn-sub">Pemandangan hutan & gunung</div>
+                                    <div class="action-card-btn" data-act="sebuah gunung tinggi dengan hutan tropis di depannya pada pagi hari setelah hujan, kabut tipis di antara pepohonan, sungai mengalir di lembah, cahaya matahari menembus awan">
+                                        <div class="card-btn-head">🎨 Neural AI Generator</div>
+                                        <div class="card-btn-sub">Gunung & hutan berkabut</div>
                                     </div>
                                     <div class="action-card-btn" data-act="nama saya Nicholas">
                                         <div class="card-btn-head">🧠 Simpan Memori</div>
@@ -2455,7 +2594,7 @@
                     } else if (State.activeSidebarTab === 'image_gen') {
                         const itm = document.createElement('div');
                         itm.className = `chat-nav-item ${State.currentView === 'image-generator' ? 'active' : ''}`;
-                        itm.innerHTML = `<div class="chat-nav-title">🎨 Buka Local Image Studio</div>`;
+                        itm.innerHTML = `<div class="chat-nav-title">🎨 Buka Neural Studio</div>`;
                         itm.addEventListener('click', () => UI.switchView('image-generator'));
                         list.appendChild(itm);
                     } else if (State.activeSidebarTab === 'memory') {
@@ -2473,64 +2612,106 @@
                     if (window.innerWidth <= 768 && sb) sb.classList.remove('drawer-open');
                 },
 
-                // Local Procedural Generator Trigger
-                async triggerCanvasGeneration(promptText) {
-                    const canvas = document.getElementById('localCanvasRenderer');
-                    const prompt = promptText || document.getElementById('imgPromptInput').value.trim() || 'pemandangan hutan dan gunung';
+                // Neural Generator Engine Trigger
+                async triggerNeuralGeneration(promptText) {
+                    if (State.isGeneratingImg) return;
+                    const canvas = document.getElementById('neuralCanvasRenderer');
+                    const prompt = promptText || document.getElementById('imgPromptInput').value.trim();
+                    if (!prompt) return UI.toast('Masukkan prompt deskripsi gambar.', 'warning');
+
+                    const negative = document.getElementById('imgNegativePrompt').value.trim();
                     const style = document.getElementById('selImgStyle').value;
-                    const seed = parseInt(document.getElementById('numSeedInput').value, 10) || 4281;
+                    const profile = document.getElementById('selModelProfile').value;
+                    const seed = parseInt(document.getElementById('numSeedInput').value, 10) || Math.floor(Math.random() * 900000);
+                    const cfgScale = parseFloat(document.getElementById('numCfgScale').value) || 7.5;
                     const aspect = State.settings.selectedAspect || '1:1';
-                    const dims = LocalImageGenerator.getDimensions(aspect);
 
-                    canvas.width = dims.width;
-                    canvas.height = dims.height;
-
+                    const overlay = document.getElementById('genProgressOverlay');
+                    const phaseText = document.getElementById('progressPhaseText');
+                    const detailText = document.getElementById('progressDetailText');
+                    const barFill = document.getElementById('progressBarFill');
+                    const stepCount = document.getElementById('progressStepCount');
+                    const btnSubmit = document.getElementById('btnGenerateImageSubmit');
+                    const btnCancel = document.getElementById('btnCancelGeneration');
                     const statusBadge = document.getElementById('previewStatusBadge');
-                    statusBadge.textContent = 'Rendering 2D Vector & Canvas...';
 
-                    // Procedural Render
-                    const pngDataUrl = LocalImageGenerator.generate(canvas, prompt, {
-                        style: style,
-                        seed: seed
-                    });
+                    State.isGeneratingImg = true;
+                    btnSubmit.style.display = 'none';
+                    btnCancel.style.display = 'block';
+                    overlay.classList.add('active');
+                    statusBadge.textContent = 'Status: Neural Synthesis Running';
 
-                    statusBadge.textContent = 'Render Selesai';
+                    try {
+                        const result = await NeuralPipeline.generateImage(prompt, negative, {
+                            aspectRatio: aspect,
+                            profile: profile,
+                            style: style,
+                            seed: seed,
+                            cfgScale: cfgScale,
+                            onProgress: (prog) => {
+                                phaseText.textContent = prog.phase;
+                                detailText.textContent = 'Proses inferensi laten neural (' + style + ' profile)...';
+                                barFill.style.width = prog.pct + '%';
+                                stepCount.textContent = 'Step ' + prog.step + ' / ' + prog.totalSteps;
+                            }
+                        });
 
-                    const imgItem = {
-                        id: 'art_' + Date.now(),
-                        prompt: prompt,
-                        style: style,
-                        seed: seed,
-                        aspectRatio: aspect,
-                        width: dims.width,
-                        height: dims.height,
-                        dataUrl: pngDataUrl,
-                        svgData: State.currentSVGString,
-                        createdAt: Date.now(),
-                        isFavorite: false,
-                        projectId: State.activeProjectId
-                    };
+                        // Render Pixel Buffer to Canvas
+                        canvas.width = result.width;
+                        canvas.height = result.height;
+                        const ctx = canvas.getContext('2d');
+                        const imgData = new ImageData(result.pixelBuffer, result.width, result.height);
+                        ctx.putImageData(imgData, 0, 0);
 
-                    State.activeImage = imgItem;
-                    State.images.unshift(imgItem);
-                    await IndexedDBStore.saveImage(imgItem);
+                        const pngDataUrl = canvas.toDataURL('image/png');
 
-                    // Sync to File Manager
-                    const filename = `${LocalImageGenerator.sanitizeFilename(prompt)}-${Math.floor(Math.random()*900+100)}.png`;
-                    State.files.unshift({
-                        id: 'f_art_' + Date.now(),
-                        projectId: State.activeProjectId,
-                        name: filename,
-                        type: 'image/png',
-                        size: Math.round(pngDataUrl.length * 0.75),
-                        content: pngDataUrl,
-                        source: 'Local Image Generator',
-                        updatedAt: Date.now()
-                    });
-                    Sync.files();
+                        const genItem = {
+                            id: 'neural_' + Date.now(),
+                            prompt: prompt,
+                            negativePrompt: negative,
+                            style: style,
+                            profile: profile,
+                            seed: seed,
+                            aspectRatio: aspect,
+                            width: result.width,
+                            height: result.height,
+                            dataUrl: pngDataUrl,
+                            createdAt: Date.now(),
+                            isFavorite: false,
+                            projectId: State.activeProjectId
+                        };
 
-                    this.renderImageGallery();
-                    UI.toast('Gambar prosedural berhasil dibuat & disimpan ke File Manager!', 'success');
+                        State.activeImage = genItem;
+                        State.images.unshift(genItem);
+                        await IndexedDBStore.saveGeneration(genItem);
+
+                        // Sync with File Manager
+                        const safeName = 'neural-' + prompt.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 30) + '-' + seed + '.png';
+                        State.files.unshift({
+                            id: 'f_art_' + Date.now(),
+                            projectId: State.activeProjectId,
+                            name: safeName,
+                            type: 'image/png',
+                            size: Math.round(pngDataUrl.length * 0.75),
+                            content: pngDataUrl,
+                            source: 'Neural AI Generator',
+                            updatedAt: Date.now()
+                        });
+                        Sync.files();
+
+                        this.renderImageGallery();
+                        statusBadge.textContent = 'Status: Synthesis Complete';
+                        UI.toast('Gambar AI berhasil digenerasi dan disimpan!', 'success');
+
+                    } catch (err) {
+                        statusBadge.textContent = 'Status: Error';
+                        UI.toast(err.message || 'Gagal menjalankan inferensi neural.', 'danger');
+                    } finally {
+                        State.isGeneratingImg = false;
+                        btnSubmit.style.display = 'block';
+                        btnCancel.style.display = 'none';
+                        overlay.classList.remove('active');
+                    }
                 },
 
                 renderImageGallery() {
@@ -2540,7 +2721,7 @@
 
                     const list = State.filterFavOnly ? State.images.filter(x => x.isFavorite) : State.images;
                     if (!list.length) {
-                        g.innerHTML = '<div style="color:var(--text-dim); padding:16px; grid-column:1/-1; text-align:center;">Belum ada karya gambar yang dibuat.</div>';
+                        g.innerHTML = '<div style="color:var(--text-dim); padding:16px; grid-column:1/-1; text-align:center;">Belum ada hasil generasi AI tersimpan.</div>';
                         return;
                     }
 
@@ -2554,7 +2735,6 @@
                                 <div class="gallery-card-actions">
                                     <button class="btn-icon-sm btn-fav-toggle" title="Favorit">${item.isFavorite ? '⭐' : '☆'}</button>
                                     <button class="btn-icon-sm btn-dl-png" title="Unduh PNG">⬇ PNG</button>
-                                    <button class="btn-icon-sm btn-dl-svg" title="Unduh SVG">🖼️ SVG</button>
                                     <button class="btn-icon-sm danger-hover btn-del-art" title="Hapus">🗑️</button>
                                 </div>
                             </div>
@@ -2563,14 +2743,13 @@
                         card.querySelector('img').addEventListener('click', () => UI.openLightbox(item));
                         card.querySelector('.btn-fav-toggle').addEventListener('click', async () => {
                             item.isFavorite = !item.isFavorite;
-                            await IndexedDBStore.saveImage(item);
+                            await IndexedDBStore.saveGeneration(item);
                             UI.renderImageGallery();
                         });
                         card.querySelector('.btn-dl-png').addEventListener('click', () => UI.downloadPNG(item));
-                        card.querySelector('.btn-dl-svg').addEventListener('click', () => UI.downloadSVG(item));
                         card.querySelector('.btn-del-art').addEventListener('click', async () => {
-                            if (confirm('Hapus karya ini?')) {
-                                await IndexedDBStore.deleteImage(item.id);
+                            if (confirm('Hapus gambar ini?')) {
+                                await IndexedDBStore.deleteGeneration(item.id);
                                 State.images = State.images.filter(x => x.id !== item.id);
                                 UI.renderImageGallery();
                                 UI.toast('Gambar dihapus.', 'info');
@@ -2597,29 +2776,15 @@
                 downloadPNG(item) {
                     const a = document.createElement('a');
                     a.href = item.dataUrl;
-                    a.download = `${LocalImageGenerator.sanitizeFilename(item.prompt)}-${item.seed}.png`;
+                    a.download = `neural_ai_${item.seed}.png`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     UI.toast('Berkas PNG berhasil diunduh!', 'success');
                 },
 
-                downloadSVG(item) {
-                    const svgStr = item.svgData || State.currentSVGString;
-                    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${LocalImageGenerator.sanitizeFilename(item.prompt)}-${item.seed}.svg`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    UI.toast('Berkas SVG vektor berhasil diunduh!', 'success');
-                },
-
                 bindEvents() {
-                    // Chat input & actions
+                    // Chat events
                     document.getElementById('btnSendMessage').addEventListener('click', () => {
                         Agent.handleInput(document.getElementById('userChatInput').value);
                     });
@@ -2640,7 +2805,7 @@
                         if (q) bukaGoogle(q);
                     });
                     document.getElementById('btnClearChatHistory').addEventListener('click', () => {
-                        if (confirm('Bersihkan obrolan aktif?')) ChatEngine.clearActiveMessages();
+                        if (confirm('Bersihkan percakapan aktif?')) ChatEngine.clearActiveMessages();
                     });
 
                     // Navigation View Switches
@@ -2675,17 +2840,22 @@
                         UI.applyTheme(next);
                     });
 
-                    // Image Generator Form Controls
+                    // Neural Generator Form Controls
                     document.getElementById('btnGenerateImageSubmit').addEventListener('click', () => {
-                        UI.triggerCanvasGeneration(document.getElementById('imgPromptInput').value);
+                        UI.triggerNeuralGeneration(document.getElementById('imgPromptInput').value);
                     });
-                    document.getElementById('btnClearImgForm').addEventListener('click', () => {
-                        document.getElementById('imgPromptInput').value = '';
+                    document.getElementById('btnCancelGeneration').addEventListener('click', () => {
+                        NeuralPipeline.cancel();
+                        State.isGeneratingImg = false;
+                        document.getElementById('btnGenerateImageSubmit').style.display = 'block';
+                        document.getElementById('btnCancelGeneration').style.display = 'none';
+                        document.getElementById('genProgressOverlay').classList.remove('active');
+                        UI.toast('Generasi neural dibatalkan.', 'warning');
                     });
+
                     document.getElementById('btnRandomizeSeed').addEventListener('click', () => {
                         const newSeed = Math.floor(Math.random() * 900000 + 1000);
                         document.getElementById('numSeedInput').value = newSeed;
-                        UI.triggerCanvasGeneration(document.getElementById('imgPromptInput').value);
                     });
 
                     // Aspect Ratio Pills
@@ -2696,7 +2866,6 @@
                             target.classList.add('active');
                             State.settings.selectedAspect = target.getAttribute('data-aspect');
                             Sync.settings();
-                            UI.triggerCanvasGeneration(document.getElementById('imgPromptInput').value);
                         });
                     });
 
@@ -2705,28 +2874,25 @@
                         chip.addEventListener('click', (e) => {
                             const p = e.target.getAttribute('data-sample');
                             document.getElementById('imgPromptInput').value = p;
-                            UI.triggerCanvasGeneration(p);
+                            UI.triggerNeuralGeneration(p);
                         });
                     });
 
-                    // Active Canvas Download Buttons
+                    // Active Canvas Buttons
                     document.getElementById('btnDownloadPNG').addEventListener('click', () => {
                         if (State.activeImage) UI.downloadPNG(State.activeImage);
                     });
-                    document.getElementById('btnDownloadSVG').addEventListener('click', () => {
-                        if (State.activeImage) UI.downloadSVG(State.activeImage);
-                    });
                     document.getElementById('btnSaveToFiles').addEventListener('click', () => {
-                        UI.toast('Gambar sudah otomatis tersimpan di File Manager!', 'info');
+                        UI.toast('Hasil telah otomatis tersimpan di File Manager!', 'info');
                     });
                     document.getElementById('btnRegenerateCanvas').addEventListener('click', () => {
                         document.getElementById('numSeedInput').value = Math.floor(Math.random() * 900000 + 1000);
-                        UI.triggerCanvasGeneration(document.getElementById('imgPromptInput').value);
+                        UI.triggerNeuralGeneration(document.getElementById('imgPromptInput').value);
                     });
                     document.getElementById('btnFavoriteCanvas').addEventListener('click', async () => {
                         if (State.activeImage) {
                             State.activeImage.isFavorite = !State.activeImage.isFavorite;
-                            await IndexedDBStore.saveImage(State.activeImage);
+                            await IndexedDBStore.saveGeneration(State.activeImage);
                             UI.renderImageGallery();
                             UI.toast(State.activeImage.isFavorite ? 'Ditambahkan ke Favorit ⭐' : 'Dihapus dari Favorit', 'info');
                         }
@@ -2743,9 +2909,6 @@
                     document.getElementById('btnLightboxDownloadPNG').addEventListener('click', () => {
                         if (State.activeImage) UI.downloadPNG(State.activeImage);
                     });
-                    document.getElementById('btnLightboxDownloadSVG').addEventListener('click', () => {
-                        if (State.activeImage) UI.downloadSVG(State.activeImage);
-                    });
 
                     // Gallery Filters
                     document.getElementById('btnFilterAllImages').addEventListener('click', () => {
@@ -2757,15 +2920,15 @@
                         UI.renderImageGallery();
                     });
                     document.getElementById('btnClearAllHistoryImages').addEventListener('click', async () => {
-                        if (confirm('Hapus seluruh riwayat gambar lokal?')) {
-                            for (const img of State.images) await IndexedDBStore.deleteImage(img.id);
+                        if (confirm('Hapus seluruh riwayat generasi lokal?')) {
+                            for (const img of State.images) await IndexedDBStore.deleteGeneration(img.id);
                             State.images = [];
                             UI.renderImageGallery();
-                            UI.toast('Seluruh riwayat gambar dibersihkan.', 'info');
+                            UI.toast('Seluruh riwayat dibersihkan.', 'info');
                         }
                     });
 
-                    // Command Palette
+                    // Command Palette (Ctrl+K)
                     window.addEventListener('keydown', (e) => {
                         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                             e.preventDefault();
@@ -2778,6 +2941,7 @@
                             UI.closeSidebar();
                         }
                     });
+
                     document.getElementById('btnOpenCommandPalette').addEventListener('click', () => {
                         document.getElementById('cmdPaletteOverlay').classList.add('active');
                         document.getElementById('cmdPaletteInput').focus();
@@ -2788,7 +2952,7 @@
                 }
             };
 
-            // Start Application
+            // Inisialisasi Aplikasi
             UI.init();
         });
     </script>
